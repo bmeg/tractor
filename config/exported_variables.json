@@ -1,0 +1,8 @@
+{
+    "swapi_config": {
+        "aws_conn_id": "ceph2",
+        "bucket_name": "EllrottLab",
+        "s3_prefix": "tractor/swapi/",
+        "url": "https://swapi.dev/api/"
+    }
+}
