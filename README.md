@@ -8,6 +8,14 @@ Airflow based builds
 
 * See [airflow configurations](README-config.md)
 
+## develop
+
+* [Best practices](README-writing-DAGs.md)
+
 ## run
 
 * [swapi_catalog](dags/README-swapi_catalog.md)
+
+## problems?
+
+* [docker within docker](README-docker-within-docker.md)
