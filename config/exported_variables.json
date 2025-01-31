@@ -6,5 +6,5 @@
         "s3_prefix": "tractor/swapi",
         "url": "https://swapi.dev/api/"
     },
-    "swapi_etag": "62d89cf607f7b22eb4e22267457e26b0"
+    "swapi_etag": "INITIAL-VALUE"
 }
