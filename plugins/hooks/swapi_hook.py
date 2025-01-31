@@ -93,18 +93,20 @@ class Transform(SwapiHook):
     def run(self) -> bool:
         """ Transform the Star Wars API resources from JSON to HTML """
         keys = self.s3_hook.list_keys(bucket_name=self.config.bucket_name, prefix=self.config.s3_prefix)
+        keys = [key for key in keys if key.endswith(".json")]
+        assert keys, f"No json files found in s3://{self.config.bucket_name}/{self.config.s3_prefix}"
         for key in keys:
-            if key.endswith(".json"):
-                resource = json.loads(self.s3_hook.read_key(key=key, bucket_name=self.config.bucket_name))
-                # Transform the resource
-                html = json2html.convert(json=resource)
-                # Save the transformed resource
-                self.s3_hook.load_string(
-                    html,
-                    key=key.replace(".json", ".html"),
-                    bucket_name=self.config.bucket_name,
-                    replace=True
-                )
+            resource = json.loads(self.s3_hook.read_key(key=key, bucket_name=self.config.bucket_name))
+            # Transform the resource
+            html = json2html.convert(json=resource)
+            # Save the transformed resource
+            self.s3_hook.load_string(
+                html,
+                key=key.replace(".json", ".html"),
+                bucket_name=self.config.bucket_name,
+                replace=True
+            )
+            logging.info(f"Transformed {key} to {key.replace('.json', '.html')}")
         return True
 
 
@@ -113,7 +115,8 @@ class Load(SwapiHook):
     def run(self) -> bool:
         """ Load the Star Wars API resources into a webserver """
         keys = self.s3_hook.list_keys(bucket_name=self.config.bucket_name, prefix=self.config.s3_prefix)
+        keys = [key for key in keys if key.endswith(".html")]
+        assert keys, f"No html files found in s3://{self.config.bucket_name}/{self.config.s3_prefix}"
         for key in keys:
-            if key.endswith(".html"):
-                logging.info(f"Loading {key} into the webserver")
+            logging.info(f"(mock) Loading {key} into the webserver")
         return True
