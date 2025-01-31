@@ -1,0 +1,9 @@
+
+name: swapi_fixer
+
+steps:
+  - commandLine: ./swapi_fix.py
+    inputs:
+      - swapi_scrapper.people
+    outputs:
+      people: people_fixed.json

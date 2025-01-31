@@ -1,0 +1,12 @@
+
+name: swapi_scrapper
+
+steps:
+  - commandLine: ./swapi_scrapper.py
+    outputs:
+      people: people.json
+      planets: planets.json
+      films: films.json
+      species: species.json
+      vehicles: vehicles.json
+      starships: starships.json
