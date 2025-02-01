@@ -7,7 +7,6 @@ from airflow.models import Variable
 
 from hooks.swapi_hook import CheckETag, Extract, Transform, Load
 from airflow.sensors.base import PokeReturnValue
-# from sensors.etag_change_sensor import ETagChangeSensor
 
 
 @dag(schedule_interval="@daily", start_date=datetime(2024, 1, 1), catchup=False)
