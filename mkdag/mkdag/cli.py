@@ -44,7 +44,7 @@ def render_dag(config, output, template):
     # Load YAML config
     with open(config, "r") as file:
         config_data = yaml.safe_load(file)
-    assert 'dag_id' in config_data, 'dag_id not found in config file'
+    assert any(['dag_id' in config_data, 'dag' in config_data]), 'dag_id not found in config file'
     # Load Jinja template
     env = Environment(loader=FileSystemLoader("."), autoescape=True)
     template_obj = env.get_template(template)

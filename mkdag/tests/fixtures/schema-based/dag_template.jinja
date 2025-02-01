@@ -1,0 +1,44 @@
+
+from airflow.decorators import dag, task
+from datetime import datetime
+
+@dag(
+    dag_id="{{ dag.id }}",
+    schedule="{{ dag.schedule_interval }}",
+    start_date=datetime.strptime('{{dag.start_date}}', "%Y-%m-%d"),
+    catchup={{ dag.catchup }},
+    default_args={
+        "owner": "airflow",
+        "retries": {{ dag.default_args.retries }},
+        "retry_delay": {{ dag.default_args.retry_delay }} * 60,
+    }
+)
+def {{ dag.id }}():
+    {% for task in dag.tasks %}
+    @task
+    def {{ task.id }}(
+        {% if task.inputs %}{{ task.inputs | join(", ") }}{% endif %}
+    ):
+        {% if task.type == "python" %}
+        from {{ task.function.rsplit(".", 1)[0] }} import {{ task.function.rsplit(".", 1)[1] }}
+        return {{ task.function.rsplit(".", 1)[1] }}(
+            {% if task.inputs %}{{ task.inputs | join(", ") }}{% endif %}
+        )
+        {% elif task.type == "bash" %}
+        import subprocess
+        subprocess.run("{{ task.function }}", shell=True, check=True)
+        {% endif %}
+
+    {% endfor %}
+
+    {% for task in dag.tasks %}
+    {% if task.upstream %}
+    {{ task.id }}.set_upstream(
+        {% for dep in task.upstream %}
+        {{ dep.task }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    )
+    {% endif %}
+    {% endfor %}
+
+{{ dag.id }}()

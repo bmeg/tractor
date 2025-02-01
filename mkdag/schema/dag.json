@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Airflow DAG Configuration",
+  "description": "Schema for defining an Airflow DAG, including tasks, inputs, outputs, sensors, and dependencies",
+  "type": "object",
+  "properties": {
+    "dag": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique DAG identifier" },
+        "description": { "type": "string", "description": "Short description of the DAG" },
+        "schedule_interval": { "type": "string", "description": "Airflow schedule expression" },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date in YYYY-MM-DD format"
+        },
+        "catchup": { "type": "boolean", "description": "Whether to catch up past runs" },
+        "default_args": {
+          "type": "object",
+          "properties": {
+            "retries": { "type": "integer", "minimum": 0, "description": "Number of retries" },
+            "retry_delay": { "type": "integer", "minimum": 1, "description": "Retry delay in minutes" }
+          },
+          "required": ["retries", "retry_delay"]
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^s3://.*",
+            "description": "S3 path for input data"
+          },
+          "description": "Dictionary of named input sources (S3 paths)"
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^s3://.*",
+            "description": "S3 path for output data"
+          },
+          "description": "Dictionary of named output destinations (S3 paths)"
+        },
+        "sensors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique sensor ID" },
+              "type": {
+                "type": "string",
+                "enum": ["s3", "http", "file", "sql", "gcs"],
+                "description": "Sensor type (S3, HTTP, File, SQL, GCS)"
+              },
+              "path": { "type": "string", "description": "File, API, or SQL condition" },
+              "mode": {
+                "type": "string",
+                "enum": ["poke", "reschedule"],
+                "description": "Execution mode (poke or reschedule)"
+              },
+              "poke_interval": { "type": "integer", "minimum": 10, "description": "Poke interval in seconds" },
+              "timeout": { "type": "integer", "minimum": 30, "description": "Timeout in seconds" }
+            },
+            "required": ["id", "type", "path"]
+          },
+          "description": "List of sensors that must trigger before tasks run"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique task ID" },
+              "type": {
+                "type": "string",
+                "enum": ["python", "bash", "http", "sql", "databricks", "kubernetes", "gcs_transfer"],
+                "description": "Task type"
+              },
+              "function": { "type": "string", "description": "Path to Python function for execution" },
+              "inputs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of input names that match the inputs section"
+              },
+              "outputs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of output names that match the outputs section"
+              },
+              "upstream": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "task": { "type": "string", "description": "Task ID of upstream task" },
+                    "condition": {
+                      "type": "string",
+                      "enum": ["on_success", "on_failure", "always"],
+                      "description": "Execution condition for dependency"
+                    }
+                  },
+                  "required": ["task", "condition"]
+                },
+                "description": "List of upstream task dependencies with conditions"
+              }
+            },
+            "required": ["id", "type"]
+          },
+          "description": "List of tasks that define the DAG workflow"
+        }
+      },
+      "required": ["id", "description", "schedule_interval", "start_date", "default_args", "tasks"]
+    }
+  },
+  "required": ["dag"]
+}

@@ -1,0 +1,28 @@
+dag:
+  catchup: false
+  default_args:
+    retries: 3
+    retry_delay: 5
+  description: A simple DAG using task decorators
+  id: simple_gene_processing_dag
+  schedule_interval: '@daily'
+  start_date: '2025-01-01'
+  tasks:
+  - function: tasks.extract_data
+    id: extract
+    inputs: []
+    type: python
+  - function: tasks.transform_data
+    id: transform
+    inputs:
+    - extract
+    type: python
+    upstream:
+    - task: extract
+  - function: echo 'Loading data completed'
+    id: load
+    inputs:
+    - transform
+    type: bash
+    upstream:
+    - task: transform
