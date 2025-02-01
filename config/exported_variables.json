@@ -1,8 +1,10 @@
 {
-    "swapi_config": {
-        "aws_conn_id": "ceph2",
+    "swapi_dag": {
+        "aws_conn_id": "swapi_dag",
         "bucket_name": "EllrottLab",
-        "s3_prefix": "tractor/swapi/",
+        "etag_variable_name": "swapi_etag",
+        "s3_prefix": "tractor/swapi",
         "url": "https://swapi.dev/api/"
-    }
+    },
+    "swapi_etag": "INITIAL-VALUE"
 }

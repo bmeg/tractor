@@ -1,9 +1,9 @@
 {
-  "ceph2": {
+  "swapi_dag": {
     "conn_type": "aws",
-    "description": "connection to ceph bucket",
-    "login": CHANGE_ME-aws_access_key_id,
-    "password": CHANGE_ME-aws_secret_access_key,
+    "description": "connection to ceph bucket for star wars api (swapi)",
+    "login": "CHANGE_ME-aws_access_key_id",
+    "password": "CHANGE_ME-aws_secret_access_key",
     "host": "",
     "port": null,
     "schema": "",
