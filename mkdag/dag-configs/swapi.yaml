@@ -1,0 +1,28 @@
+dag:
+  catchup: false
+  default_args:
+    retries: 3
+    retry_delay: 5
+  description: A star wars API DAG
+  id: swapi
+  schedule_interval: '@daily'
+  start_date: '2025-01-01'
+  tasks: []
+  extra:
+    configuration:
+      inputs:
+        catalog: https://swapi.dev/api/
+      outputs: {}
+      "aws_conn_id": "swapi_dag"
+      "bucket_name": "EllrottLab"
+      "etag_variable_name": "swapi_etag"
+      "s3_prefix": "tractor/swapi"
+
+    sensors:
+    - id: check_swapi
+      mode: poke
+      path: https://swapi.dev/api/
+      poke_interval: 300
+      timeout: 1800
+      type: http
+

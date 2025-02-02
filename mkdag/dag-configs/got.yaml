@@ -1,0 +1,29 @@
+dag:
+  catchup: false
+  default_args:
+    retries: 3
+    retry_delay: 5
+  description: Game of Thrones
+  id: got
+  schedule_interval: '@daily'
+  start_date: '2025-01-01'
+  # default ETL tasks will be generated
+  tasks: []
+  extra:
+    configuration:
+      inputs:
+        books: https://anapioficeandfire.com/api/books/
+        characters: https://anapioficeandfire.com/api/characters/
+        houses: https://anapioficeandfire.com/api/houses/
+      outputs: {}
+      "bucket_name": "EllrottLab"
+      "sensor_variable_name": "got_etag"
+      "s3_prefix": "tractor/got"
+
+    sensors:
+    - id: check_swapi
+      mode: poke
+      path: https://swapi.dev/api/
+      poke_interval: 300
+      timeout: 1800
+      type: http

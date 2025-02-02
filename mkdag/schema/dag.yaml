@@ -27,62 +27,66 @@ properties:
       id:
         description: Unique DAG identifier
         type: string
-      inputs:
-        additionalProperties:
-          description: S3 path for input data
-          pattern: ^s3://.*
-          type: string
-        description: Dictionary of named input sources (S3 paths)
-        type: object
-      outputs:
-        additionalProperties:
-          description: S3 path for output data
-          pattern: ^s3://.*
-          type: string
-        description: Dictionary of named output destinations (S3 paths)
-        type: object
+      extra:
+        configuration:
+          description: Additional configuration settings
+          type: object
+          inputs:
+            additionalProperties:
+              description: S3 path for input data
+              pattern: ^s3://.*
+              type: string
+            description: Dictionary of named input sources (S3 paths)
+            type: object
+          outputs:
+            additionalProperties:
+              description: S3 path for output data
+              pattern: ^s3://.*
+              type: string
+            description: Dictionary of named output destinations (S3 paths)
+            type: object
+        sensors:
+          description: List of sensors that must trigger before tasks run
+          items:
+            properties:
+              id:
+                description: Unique sensor ID
+                type: string
+              mode:
+                description: Execution mode (poke or reschedule)
+                enum:
+                - poke
+                - reschedule
+                type: string
+              path:
+                description: File, API, or SQL condition
+                type: string
+              poke_interval:
+                description: Poke interval in seconds
+                minimum: 10
+                type: integer
+              timeout:
+                description: Timeout in seconds
+                minimum: 30
+                type: integer
+              type:
+                description: Sensor type (S3, HTTP, File, SQL, GCS)
+                enum:
+                - s3
+                - http
+                - file
+                - sql
+                - gcs
+                type: string
+            required:
+            - id
+            - type
+            - path
+            type: object
+          type: array
       schedule_interval:
         description: Airflow schedule expression
         type: string
-      sensors:
-        description: List of sensors that must trigger before tasks run
-        items:
-          properties:
-            id:
-              description: Unique sensor ID
-              type: string
-            mode:
-              description: Execution mode (poke or reschedule)
-              enum:
-              - poke
-              - reschedule
-              type: string
-            path:
-              description: File, API, or SQL condition
-              type: string
-            poke_interval:
-              description: Poke interval in seconds
-              minimum: 10
-              type: integer
-            timeout:
-              description: Timeout in seconds
-              minimum: 30
-              type: integer
-            type:
-              description: Sensor type (S3, HTTP, File, SQL, GCS)
-              enum:
-              - s3
-              - http
-              - file
-              - sql
-              - gcs
-              type: string
-          required:
-          - id
-          - type
-          - path
-          type: object
-        type: array
       start_date:
         description: Start date in YYYY-MM-DD format
         format: date

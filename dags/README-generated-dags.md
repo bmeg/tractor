@@ -7,14 +7,16 @@ The `swapi_dag` workflow is an Apache Airflow DAG designed to extract, transform
 1. **Check ETag**: This task checks if the ETag of the SWAPI has changed.
 2. **Extract**: If the ETag has changed, this task downloads the SWAPI catalog and its resources to an S3 bucket.
 3. **Transform**: This task reads the extracted JSON data from S3, transforms it into HTML, and stores the transformed data back in S3.
-4. **Load**: This task loads the transformed HTML data into a webserver.
+4. **Validate**: This task validates the transformed data.
+5. **Load**: This task loads the transformed HTML data into a webserver.
 
 #### Task Dependencies
 
 The tasks are set up with the following dependencies:
-- `load` depends on `transform`
+- `load` depends on `validate`
+- `validate` depends on `transform`
 - `transform` depends on `extract`
-- `extract` depends on `check_etag`
+- `extract` depends on `check`
 
 #### Artifacts
 
@@ -31,17 +33,20 @@ The application code is separated into hooks and sensors to promote modularity a
 
 Hooks are used to interact with external systems and services. In this workflow, the `SwapiHook` class and its subclasses are used to interact with the SWAPI and S3.
 
-- **`SwapiHook`**: Base class for ETL tasks, providing common functionality such as downloading files from a URL and uploading them to S3.
-- **`CheckETag`**: Subclass of `SwapiHook` that checks if the ETag of the SWAPI has changed.
-- **`Extract`**: Subclass of `SwapiHook` that downloads the SWAPI catalog and resources to S3.
-- **`Transform`**: Subclass of `SwapiHook` that transforms the JSON data from S3 into HTML.
-- **`Load`**: Subclass of `SwapiHook` that loads the transformed HTML data into a webserver.
+- **`BaseETLHook`**: Base class for ETL tasks, providing common functionality such as downloading files from a URL and uploading them to S3.
+- **`{DAG}Hook`**: Base class for interacting with the API, customizing the behavior of the ETL tasks.
+- **`Check`**: Subclass of `{DAG}Hook` that checks if the source data has changed.
+- **`Extract`**: Subclass of `{DAG}Hook` that downloads source data to S3.
+- **`Transform`**: Subclass of `{DAG}Hook` that transforms the source data.
+- **`Validate`**: Subclass of `{DAG}Hook` that checks the transformed data.
+- **`Load`**: Subclass of `{DAG}Hook` that loads the transformed data into a data sink.
 
 #### Sensors
 
 Sensors are used to monitor and wait for certain conditions to be met before proceeding with the next task.
 
 - **`check_etag`**: Function that checks the ETag of a URL and stores it in an Airflow Variable. This function is used by the `CheckETag` class to determine if the ETag has changed.
+- **`last_modified`**: Function that checks the performs a HEAD If-Last-Modified.
 
 
 #### Logs
