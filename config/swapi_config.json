@@ -1,1 +1,12 @@
-{"swapi": {"inputs": {"catalog": "https://swapi.dev/api/"}, "outputs": {}, "aws_conn_id": "swapi_dag", "bucket_name": "EllrottLab", "etag_variable_name": "swapi_etag", "s3_prefix": "tractor/swapi"}}
+{
+  "swapi": {
+    "inputs": {
+      "catalog": "https://swapi.dev/api/"
+    },
+    "outputs": {},
+    "aws_conn_id": "swapi_dag",
+    "bucket_name": "EllrottLab",
+    "etag_variable_name": "swapi_etag",
+    "s3_prefix": "tractor/swapi"
+  }
+}
