@@ -51,7 +51,6 @@ def render_dag_cli(config, output):
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
-        raise e
         exit(1)
 
 

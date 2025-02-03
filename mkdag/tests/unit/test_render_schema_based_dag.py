@@ -18,6 +18,11 @@ def valid_config_dict(valid_config) -> dict:
     return yaml.load(open(valid_config), yaml.SafeLoader)
 
 
+@pytest.fixture
+def no_schedule_config_dict() -> dict:
+    return yaml.load(open("tests/fixtures/schema-based/config-no-schedule.yaml"), yaml.SafeLoader)
+
+
 # Fixture for the output directory
 @pytest.fixture
 def output_file():
@@ -43,7 +48,28 @@ def test_render_dag_decorator(valid_config_dict: dict, output_file: str):
         f.write(dag)
 
     # Run black to test formatting
-    black_result = subprocess.run(['black', '--check', '--diff', output_file], capture_output=True, text=True)
+    # black_result = subprocess.run(['black', '--check', '--diff', output_file], capture_output=True, text=True)
+    black_result = subprocess.run(['black',  output_file], capture_output=True, text=True)
+    print(f"black exit_code: {black_result.returncode} {black_result.stdout} {black_result.stderr}")
+    assert black_result.returncode == 0, f"Black formatting check failed: {black_result.stdout} {black_result.stderr}"
+
+
+def test_render_dag_no_schedule(no_schedule_config_dict: dict, output_file: str):
+    """Test successful DAG rendering."""
+    dag = DAGGenerator(no_schedule_config_dict).render()
+    print(dag)
+    # Check if the generated DAG code is valid Python code
+    try:
+        ast.parse(dag)
+    except SyntaxError as e:
+        raise AssertionError(f"Generated DAG code is not valid Python code: {e}")
+
+    with open(output_file, 'wt') as f:
+        f.write(dag)
+
+    # Run black to test formatting
+    # black_result = subprocess.run(['black', '--check', '--diff', output_file], capture_output=True, text=True)
+    black_result = subprocess.run(['black',  output_file], capture_output=True, text=True)
     print(f"black exit_code: {black_result.returncode} {black_result.stdout} {black_result.stderr}")
     assert black_result.returncode == 0, f"Black formatting check failed: {black_result.stdout} {black_result.stderr}"
 

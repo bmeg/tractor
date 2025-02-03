@@ -1,11 +1,16 @@
 dag:
-  catchup: false
-  default_args:
-    retries: 3
-    retry_delay: 5
   description: A simple DAG using task decorators
-  id: simple_gene_processing
-  schedule_interval: '@daily'
+  id: got
   start_date: '2025-01-01'
   # default ETL tasks will be generated
   tasks: []
+  extra:
+    configuration:
+      "bucket_name": "EllrottLab"
+      "s3_prefix": "tractor/got"
+    # data sets to wait for
+    scheduled_datasets:
+        - bar
+        - baz
+
+
