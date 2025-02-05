@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Performer
+description: A Star Trek API DAG for Performer
+http_conn_id: stapi-http
+inputs:
+  Performer.json: /api/v2/rest/performer/search
+tags:
+- demo

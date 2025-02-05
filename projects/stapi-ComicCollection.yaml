@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-ComicCollection
+description: A Star Trek API DAG for ComicCollection
+http_conn_id: stapi-http
+inputs:
+  ComicCollection.json: /api/v1/rest/comicCollection/search
+tags:
+- demo

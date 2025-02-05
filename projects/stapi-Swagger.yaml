@@ -1,0 +1,8 @@
+dag_id: "stapi-Swagger"
+inputs:
+  stapi-Swagger.yaml: /api/v1/rest/common/download/stapi.yaml
+tags:
+  - "demo"
+aws_conn_id: stapi-aws
+description: A Star Trek API DAG for Swagger/OpenAPI
+http_conn_id: stapi-http

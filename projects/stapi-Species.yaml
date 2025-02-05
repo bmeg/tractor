@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Species
+description: A Star Trek API DAG for Species
+http_conn_id: stapi-http
+inputs:
+  Species.json: /api/v2/rest/species/search
+tags:
+- demo

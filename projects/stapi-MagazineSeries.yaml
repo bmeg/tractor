@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-MagazineSeries
+description: A Star Trek API DAG for MagazineSeries
+http_conn_id: stapi-http
+inputs:
+  MagazineSeries.json: /api/v1/rest/magazineSeries/search
+tags:
+- demo

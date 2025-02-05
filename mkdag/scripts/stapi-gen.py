@@ -25,4 +25,17 @@ def get_search_paths(yaml_file: str) -> dict:
 # Example usage
 yaml_file = 'stapi.yaml'
 search_paths = get_search_paths(yaml_file)
-print(search_paths)
+for k, v in search_paths.items():
+
+    config = {
+        "dag_id": f"stapi-{k}",
+        "description": f"A Star Trek API DAG for {k}",
+        "inputs": {
+            f"{k}.json": f"/api{v[-1]}"
+        },
+        "http_conn_id": "stapi-http",
+        "aws_conn_id": "stapi-aws",
+        "tags": ["demo"]
+    }
+    with open(f"stapi-{k}.yaml", 'w') as file:
+        file.write(yaml.dump(config, default_flow_style=False))

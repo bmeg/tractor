@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Conflict
+description: A Star Trek API DAG for Conflict
+http_conn_id: stapi-http
+inputs:
+  Conflict.json: /api/v1/rest/conflict/search
+tags:
+- demo

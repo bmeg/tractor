@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-ComicStrip
+description: A Star Trek API DAG for ComicStrip
+http_conn_id: stapi-http
+inputs:
+  ComicStrip.json: /api/v1/rest/comicStrip/search
+tags:
+- demo
