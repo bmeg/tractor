@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Series
+description: A Star Trek API DAG for Series
+http_conn_id: stapi-http
+inputs:
+  Series.json: /api/v1/rest/series/search
+tags:
+- demo
