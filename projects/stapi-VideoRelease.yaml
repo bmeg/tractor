@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-VideoRelease
+description: A Star Trek API DAG for VideoRelease
+http_conn_id: stapi-http
+inputs:
+  VideoRelease.json: /api/v2/rest/videoRelease/search
+tags:
+- demo

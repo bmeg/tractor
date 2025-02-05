@@ -1,0 +1,160 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+description: Schema for defining an Airflow DAG, including tasks, inputs, outputs,
+  sensors, and dependencies
+properties:
+  dag:
+    properties:
+      catchup:
+        description: Whether to catch up past runs
+        type: boolean
+      default_args:
+        properties:
+          retries:
+            description: Number of retries
+            minimum: 0
+            type: integer
+          retry_delay:
+            description: Retry delay in minutes
+            minimum: 1
+            type: integer
+        required:
+        - retries
+        - retry_delay
+        type: object
+      description:
+        description: Short description of the DAG
+        type: string
+      id:
+        description: Unique DAG identifier
+        type: string
+      extra:
+        configuration:
+          description: Additional configuration settings
+          type: object
+          inputs:
+            additionalProperties:
+              description: S3 path for input data
+              pattern: ^s3://.*
+              type: string
+            description: Dictionary of named input sources (S3 paths)
+            type: object
+          outputs:
+            additionalProperties:
+              description: S3 path for output data
+              pattern: ^s3://.*
+              type: string
+            description: Dictionary of named output destinations (S3 paths)
+            type: object
+        sensors:
+          description: List of sensors that must trigger before tasks run
+          items:
+            properties:
+              id:
+                description: Unique sensor ID
+                type: string
+              mode:
+                description: Execution mode (poke or reschedule)
+                enum:
+                - poke
+                - reschedule
+                type: string
+              path:
+                description: File, API, or SQL condition
+                type: string
+              poke_interval:
+                description: Poke interval in seconds
+                minimum: 10
+                type: integer
+              timeout:
+                description: Timeout in seconds
+                minimum: 30
+                type: integer
+              type:
+                description: Sensor type (S3, HTTP, File, SQL, GCS)
+                enum:
+                - s3
+                - http
+                - file
+                - sql
+                - gcs
+                type: string
+            required:
+            - id
+            - type
+            - path
+            type: object
+          type: array
+      schedule_interval:
+        description: Airflow schedule expression
+        type: string
+      start_date:
+        description: Start date in YYYY-MM-DD format
+        format: date
+        type: string
+      tasks:
+        description: List of tasks that define the DAG workflow
+        items:
+          properties:
+            function:
+              description: Path to Python function for execution
+              type: string
+            id:
+              description: Unique task ID
+              type: string
+            inputs:
+              description: List of input names that match the inputs section
+              items:
+                type: string
+              type: array
+            outputs:
+              description: List of output names that match the outputs section
+              items:
+                type: string
+              type: array
+            type:
+              description: Task type
+              enum:
+              - python
+              - bash
+              - http
+              - sql
+              - databricks
+              - kubernetes
+              - gcs_transfer
+              type: string
+            upstream:
+              description: List of upstream task dependencies with conditions
+              items:
+                properties:
+                  condition:
+                    description: Execution condition for dependency
+                    enum:
+                    - on_success
+                    - on_failure
+                    - always
+                    type: string
+                  task:
+                    description: Task ID of upstream task
+                    type: string
+                required:
+                - task
+                - condition
+                type: object
+              type: array
+          required:
+          - id
+          - type
+          type: object
+        type: array
+    required:
+    - id
+    - description
+    - schedule_interval
+    - start_date
+    - default_args
+    - tasks
+    type: object
+required:
+- dag
+title: Airflow DAG Configuration
+type: object

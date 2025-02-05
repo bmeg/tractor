@@ -1,0 +1,42 @@
+dag_id: "test2"
+schedule_interval: "@daily"
+start_date: "2025-01-01"
+description: "A POP (plain old python) ETL pipeline"
+
+variables:
+  dag:
+    aws_conn_id: test2_dag
+    bucket_name: EllrottLab
+    etag_variable_name: test_etag
+    s3_prefix: tractor/swapi
+    url: https://swapi.dev/api/
+  etag: INITIAL-VALUE
+
+connections:
+  test2_dag:
+    conn_type: aws
+    description: connection to ceph bucket for test2
+    login: CHANGE_ME-aws_access_key_id
+    password: CHANGE_ME-aws_secret_access_key
+    extra:
+      endpoint_url: https://rgw.ohsu.edu
+
+sensor:
+  description: "Check if the ETag has changed"
+  type: "http-etag"
+  poke_interval: 60
+  timeout: 120
+
+extract:
+  description: "Download from url, save in S3"
+  type: "http-s3"
+
+transform:
+  description: "Transform from json, save in S3 as html"
+  type: "json-html"
+
+load:
+  description: "(mock) list the transformed files"
+  type: "mock"
+
+

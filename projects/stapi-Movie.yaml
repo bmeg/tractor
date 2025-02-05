@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Movie
+description: A Star Trek API DAG for Movie
+http_conn_id: stapi-http
+inputs:
+  Movie.json: /api/v1/rest/movie/search
+tags:
+- demo

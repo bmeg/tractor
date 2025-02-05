@@ -1,0 +1,12 @@
+dag:
+  description: A simple DAG using task decorators
+  id: got
+  start_date: '2025-01-01'
+  # default ETL tasks will be generated
+  tasks: []
+  extra:
+    configuration:
+      "bucket_name": "EllrottLab"
+      "s3_prefix": "tractor/got"
+
+

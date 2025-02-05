@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Location
+description: A Star Trek API DAG for Location
+http_conn_id: stapi-http
+inputs:
+  Location.json: /api/v2/rest/location/search
+tags:
+- demo

@@ -1,0 +1,19 @@
+dag:
+  description: A star wars API DAG
+  id: stapi
+  start_date: '2025-01-01'
+  default_args:
+    retries: 3
+    retry_delay: 5
+  schedule_interval: '@daily'
+  tasks: []
+  extra:
+    configuration:
+      inputs:
+        catalog: https://stapi.co/api/v1/rest/movie/search
+      outputs: {}
+      "aws_conn_id": "swapi_dag"
+      "bucket_name": "EllrottLab"
+      "s3_prefix": "tractor/stapi"
+
+

@@ -10,11 +10,12 @@ Airflow based builds
 
 ## develop
 
-* [Best practices](README-writing-DAGs.md)
+* Code generation [mkdag](mkdag/README.md)
+* General guidelines [Best practices](README-writing-DAGs.md)
 
 ## run
 
-* [swapi_catalog](dags/README-swapi_catalog.md)
+* [generated dags](dags/README-generated-dags.md)
 
 ## problems?
 

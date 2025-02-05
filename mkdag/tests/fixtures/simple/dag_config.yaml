@@ -1,0 +1,11 @@
+dag:
+  catchup: false
+  default_args:
+    retries: 3
+    retry_delay: 5
+  description: A simple DAG using task decorators
+  id: simple_gene_processing
+  schedule_interval: '@daily'
+  start_date: '2025-01-01'
+  # default ETL tasks will be generated
+  tasks: []

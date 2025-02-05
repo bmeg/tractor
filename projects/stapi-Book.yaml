@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Book
+description: A Star Trek API DAG for Book
+http_conn_id: stapi-http
+inputs:
+  Book.json: /api/v2/rest/book/search
+tags:
+- demo

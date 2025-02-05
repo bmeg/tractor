@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Occupation
+description: A Star Trek API DAG for Occupation
+http_conn_id: stapi-http
+inputs:
+  Occupation.json: /api/v2/rest/occupation/search
+tags:
+- demo

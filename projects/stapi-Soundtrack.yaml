@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Soundtrack
+description: A Star Trek API DAG for Soundtrack
+http_conn_id: stapi-http
+inputs:
+  Soundtrack.json: /api/v1/rest/soundtrack/search
+tags:
+- demo

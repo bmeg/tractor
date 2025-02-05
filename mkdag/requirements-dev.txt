@@ -1,0 +1,6 @@
+setuptools
+wheel
+black
+mypy
+pytest
+pytest-cov
