@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-SpacecraftClass
+description: A Star Trek API DAG for SpacecraftClass
+http_conn_id: stapi-http
+inputs:
+  SpacecraftClass.json: /api/v2/rest/spacecraftClass/search
+tags:
+- demo

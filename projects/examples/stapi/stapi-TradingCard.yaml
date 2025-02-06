@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-TradingCard
+description: A Star Trek API DAG for TradingCard
+http_conn_id: stapi-http
+inputs:
+  TradingCard.json: /api/v1/rest/tradingCard/search
+tags:
+- demo

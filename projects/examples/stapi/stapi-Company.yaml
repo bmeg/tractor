@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Company
+description: A Star Trek API DAG for Company
+http_conn_id: stapi-http
+inputs:
+  Company.json: /api/v2/rest/company/search
+tags:
+- demo

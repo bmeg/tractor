@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-BookCollection
+description: A Star Trek API DAG for BookCollection
+http_conn_id: stapi-http
+inputs:
+  BookCollection.json: /api/v1/rest/bookCollection/search
+tags:
+- demo

@@ -11,10 +11,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-PROJECT_DIR = Variable.get("project_dir")
-logger.info(f"Tractor-Project {PROJECT_DIR}")
+PROJECT_DIR = Variable.get("project_dir", default_var=None)
+if PROJECT_DIR and os.path.exists(PROJECT_DIR):
+    logger.info(f"Tractor-Project {PROJECT_DIR}")
+else:
+    logger.warning(f"Tractor-Project variable `project_dir`={PROJECT_DIR} not found or path does not exist")
+    exit(0)
 
-
-if os.path.exists(PROJECT_DIR):
-    with DAG(dag_id="tractor-build", schedule=None, start_date=datetime(2022, 3, 4)) as dag:
-        tractor.build(PROJECT_DIR, dag)
+with DAG(dag_id="tractor-build", schedule=None, start_date=datetime(2022, 3, 4)) as dag:
+    tractor.build(PROJECT_DIR, dag)

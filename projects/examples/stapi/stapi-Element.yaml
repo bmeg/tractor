@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Element
+description: A Star Trek API DAG for Element
+http_conn_id: stapi-http
+inputs:
+  Element.json: /api/v2/rest/element/search
+tags:
+- demo
