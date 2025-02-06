@@ -1,9 +1,15 @@
 import logging
+import pathlib
 from typing import Any
 
 from airflow.datasets import Dataset
 from airflow.decorators import dag, task
 from dateutil.parser import parse
+
+configs = pathlib.Path("/opt/airflow/projects/stapi")
+if not configs.exists():
+    logging.warning(f"No configs found in {configs}")
+    exit()
 
 dataset_names = """
 stapi-Animal_processed
