@@ -1,0 +1,14 @@
+# config_test.yaml
+
+# TODO this should be an array of projects
+prefix: "test"
+bucket: "input-bucket"
+expected_files:
+  - "test/Patient.ndjson"
+  - "test/Specimen.ndjson"
+output_bucket: "output-bucket"
+# for loading data into FHIR store
+# this should be filled in by Config.py w/ intelligent defaults
+project_id: "test-project-id"
+location_id: "us-central1"
+fhir_store_id: "test-fhir-store-id"
