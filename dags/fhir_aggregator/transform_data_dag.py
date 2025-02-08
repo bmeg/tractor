@@ -69,54 +69,54 @@ This DAG reads data from a local directory, performs transformations, and upload
 *   The input directory is hardcoded as `/tmp/data`.  Change as necessary.
 """,
 )
-def transform_data_dag(**kwargs):
+def transform_dag(**kwargs):
 
     inlet_dataset = Dataset(f"{config.prefix}-raw")
     outlet_dataset = Dataset(f"{config.prefix}-processed")
 
-    @task()
-    def transform_data_task(config: Config, manifest):
+    def _transform(processed_file_names: list[str]) -> list[str]:
         """Transforms data and creates a manifest of transformed files."""
         try:
-            storage_client = storage.Client()
-            output_bucket = storage_client.bucket(config.output_bucket)
-            transformed_files = []
-            input_dir = "/tmp/data"
+            transformed_filenames = []
+            for _ in processed_file_names:
+                transformed_filename = _.replace(
+                    f"{config.prefix}/", f"{config.prefix}/R4/"
+                )
+                transformed_filenames.append(transformed_filename)
+            return transformed_filenames
 
-            for file_data in manifest["files"]:
-                filepath = os.path.join(input_dir, file_data["name"])
-                if os.path.exists(filepath):
-                    # Placeholder transformation. Replace this!
-                    transformed_filename = file_data["name"].replace(
-                        f"{config.prefix}/", f"{config.prefix}/R4/"
-                    )
-                    blob = output_bucket.blob(transformed_filename)
-                    # blob.upload_from_string(...)  # Upload transformed data here
-                    transformed_files.append(transformed_filename)
-            return {"manifest": transformed_files}
+            # storage_client = storage.Client()
+            # output_bucket = storage_client.bucket(config.output_bucket)
+            # transformed_files = []
+            # input_dir = "/tmp/data"
+            #
+            # for file_data in manifest["files"]:
+            #     filepath = os.path.join(input_dir, file_data["name"])
+            #     if os.path.exists(filepath):
+            #         # Placeholder transformation. Replace this!
+            #         transformed_filename = file_data["name"].replace(
+            #             f"{config.prefix}/", f"{config.prefix}/R4/"
+            #         )
+            #         blob = output_bucket.blob(transformed_filename)
+            #         # blob.upload_from_string(...)  # Upload transformed data here
+            #         transformed_files.append(transformed_filename)
+            # return {"manifest": transformed_files}
         except Exception as e:
             print(f"Error transforming data: {e}")
             return {}
 
-    @task()
-    def update_outlet_dataset_task(transformed_manifest: dict, outlet_dataset: Dataset):
-        """Updates the outlet dataset with the manifest of transformed files."""
-        outlet_dataset.extra = {"manifest": transformed_manifest}
-        return outlet_dataset
-
-    @task()
-    def read_inlet_manifest(*args, **kwargs):
+    @task(inlets=[inlet_dataset], outlets=[outlet_dataset])
+    def transform(inlet_events, outlet_events):
         """Reads the manifest from the inlet dataset."""
-        logging.info(f"args {args}")
-        logging.info(f"kwargs {kwargs}")
-        inlet_dataset = Dataset(f"{config.prefix}-raw")
-        return {"manifest": inlet_dataset.extra["manifest"]}
+        events = inlet_events[inlet_dataset]
+        assert len(events) > 0, "Should have at least 1 event"
+        inlet_event = events[-1]
+        assert "manifest" in inlet_event.extra, f"manifest not found in inlet_event {inlet_event.extra}"
+        transformed_manifest = _transform(inlet_event.extra["manifest"])
+        outlet_events[outlet_dataset].extra = {"manifest": transformed_manifest}
+        return transformed_manifest
 
-    inlet_manifest = read_inlet_manifest()
-    transformed_manifest = transform_data_task(config, inlet_manifest)
-    updated_outlet_dataset = update_outlet_dataset_task(
-        transformed_manifest, outlet_dataset
-    )
+    transform()
 
 
-transform_data_dag()
+transform_dag()

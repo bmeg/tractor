@@ -56,41 +56,32 @@ def ingest_data_dag(**kwargs):
 
     outlet_dataset = Dataset(f"{config.prefix}-raw")
 
-    @task()
-    def create_and_update_dataset_task(outlet_dataset: Dataset):
+    @task(outlets=[outlet_dataset])
+    def create_and_update_dataset_task(outlet_events, *args, **kwargs):
         """Creates a manifest of files in GCS, filtering by prefix, and updates the dataset."""
-        # hook = GCSHook()  # TODO
         try:
-            # TODO
-            # blobs = hook.list_blobs(config.bucket, prefix=config.prefix)
-            # manifest = [f"gs://{config.bucket}/{blob.name}" for blob in blobs]
             manifest = [_ for _ in config.expected_files]
-            outlet_dataset.extra = {"manifest": manifest}
-            return outlet_dataset
+            outlet_events[outlet_dataset].extra = {"manifest": manifest}
+            return {"manifest": manifest}
         except Exception as e:
             log.exception(f"Error creating manifest and updating dataset: {e}")
             raise AirflowException(f"Error creating manifest and updating dataset: {e}")
 
-    @task()
-    def download_files_task(outlet_dataset: Dataset):
+    @task(inlets=[outlet_dataset])
+    def download_files_task(inlet_events):
         """Downloads files from GCS."""
         download_dir = "/tmp/data"
         os.makedirs(download_dir, exist_ok=True)
-
-        # hook = GCSHook()  # TODO configure google connection
-        for file_path in outlet_dataset.extra["manifest"]:
+        extra = inlet_events[outlet_dataset][-1].extra
+        for file_path in extra["manifest"]:
             try:
                 file_name = file_path.replace(f"gs://{config.bucket}/", "")
-                # hook.download(
-                #     config.bucket, file_name, os.path.join(download_dir, file_name)
-                # )
                 log.info(f"Downloaded (mock) {file_path} {file_name}")
             except Exception as e:
                 log.exception(f"Error downloading {file_path}: {e}")
                 raise AirflowException(f"Error downloading {file_path}: {e}")
 
-    updated_dataset = create_and_update_dataset_task(outlet_dataset)
-    download_files_task(updated_dataset)
+    create_and_update_dataset_task() >> download_files_task()
 
 
 ingest_data_dag()

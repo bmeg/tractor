@@ -21,6 +21,7 @@ except Exception as e:
 
 inlet_dataset = Dataset(f"{config.prefix}-processed")
 
+
 @dag(
     dag_id=f"{config.prefix}-load_fhir",
     start_date=datetime(2024, 1, 1),
@@ -54,59 +55,30 @@ This DAG loads transformed data from Google Cloud Storage into a Google Healthca
 )
 def load_fhir_dag(**kwargs):
 
-    outlet_dataset = Dataset(f"{config.prefix}-fhir")
+    inlet_dataset = Dataset(f"{config.prefix}-processed")
 
-    @task()
-    def read_manifest(inlet_dataset: Dataset):
-        return {"manifest": inlet_dataset.extra["manifest"]}
-
-    @task()
-    def load_fhir_resources_task(config: Config, manifest):
-        """Loads FHIR resources from NDJSON files in GCS into Google Healthcare FHIR."""
+    def _load(manifest) -> dict:
+        """Transforms data and creates a manifest of transformed files."""
         try:
-            pass
-            # TODO - https://cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets.fhirStores/import
-            # fhir_store_name = fhir_stores.build_fhir_store_name(
-            #     project=config.project_id,
-            #     location=config.location_id,
-            #     dataset=inlet_dataset.id,
-            #     fhir_store=config.fhir_store_id,
-            # )
-            #
-            # client = healthcare_v1.FHIRClient(
-            #     client_options={
-            #         "api_endpoint": f"https://healthcare.googleapis.com/v1beta1/projects/{config.project_id}/locations/{config.location_id}"
-            #     }
-            # )
-            #
-            # for transformed_file in manifest:
-            #     gcs_source = fhir_stores.GcsSource(
-            #         uri=f"gs://{config.output_bucket}/{transformed_file}"
-            #     )
-            #
-            #     request = fhir_stores.ImportResourcesRequest(
-            #         parent=fhir_store_name,
-            #         gcs_source=gcs_source,
-            #         content_structure=fhir_stores.ContentStructure.RESOURCE,
-            #     )
-            #
-            #     operation = client.import_resources(request=request)
-            #     print(f"Import operation started: {operation.operation.name}")
-            #     # ... (add code to check operation status until it is completed)...
-            #     # result = operation.result()
+            for _ in manifest["manifest"]:
+                log.info(f"Loading {_}")
+            return {"loaded": manifest["manifest"]}
 
         except Exception as e:
-            print(f"Error loading FHIR resources: {e}")
-            raise
+            print(f"Error loading data: {e}")
+            return {}
 
-    @task()
-    def update_outlet_dataset(outlet_dataset: Dataset):
-        outlet_dataset.extra = {}  # Update if you need to populate this.
-        return outlet_dataset
+    @task(inlets=[inlet_dataset])
+    def load(inlet_events):
+        """Reads the manifest from the inlet dataset."""
+        events = inlet_events[inlet_dataset]
+        assert len(events) > 0, "Should have at least 1 event"
+        inlet_event = events[-1]
+        assert "manifest" in inlet_event.extra, f"manifest not found in inlet_event {inlet_event.extra}"
+        loaded_manifest = _load({"manifest": inlet_event.extra["manifest"]})
+        return loaded_manifest
 
-    manifest = read_manifest(inlet_dataset)
-    load_fhir_resources_task(config, manifest)
-    update_outlet_dataset(outlet_dataset)
+    load()
 
 
 load_fhir_dag()
