@@ -19,13 +19,18 @@ except Exception as e:
     log.error(f"Error loading config : {e}")
     exit(0)
 
-inlet_dataset = Dataset(f"{config.prefix}-processed")
+
+inlet_datasets = []
+for project in config.projects:
+    inlet_datasets.append(Dataset(f"{project.id}-processed"))
+
+website = Dataset(f"{config.fhir.project_id}/{config.fhir.fhir_store_id}-static_files")
 
 
 @dag(
-    dag_id=f"{config.prefix}-load_fhir",
+    dag_id=f"load_fhir",
     start_date=datetime(2024, 1, 1),
-    schedule=[inlet_dataset],
+    schedule=inlet_datasets,
     catchup=False,
     tags=["fhir"],
     render_template_as_native_obj=True,
@@ -55,8 +60,6 @@ This DAG loads transformed data from Google Cloud Storage into a Google Healthca
 )
 def load_fhir_dag(**kwargs):
 
-    inlet_dataset = Dataset(f"{config.prefix}-processed")
-
     def _load(manifest) -> dict:
         """Transforms data and creates a manifest of transformed files."""
         try:
@@ -68,17 +71,26 @@ def load_fhir_dag(**kwargs):
             print(f"Error loading data: {e}")
             return {}
 
-    @task(inlets=[inlet_dataset])
+    @task(inlets=inlet_datasets)
     def load(inlet_events):
         """Reads the manifest from the inlet dataset."""
-        events = inlet_events[inlet_dataset]
-        assert len(events) > 0, "Should have at least 1 event"
-        inlet_event = events[-1]
-        assert "manifest" in inlet_event.extra, f"manifest not found in inlet_event {inlet_event.extra}"
-        loaded_manifest = _load({"manifest": inlet_event.extra["manifest"]})
-        return loaded_manifest
+        loaded_manifests = []
+        for inlet_dataset in inlet_datasets:
+            events = inlet_events[inlet_dataset]
+            assert len(events) > 0, "Should have at least 1 event"
+            inlet_event = events[-1]
+            assert (
+                "manifest" in inlet_event.extra
+            ), f"manifest not found in inlet_event {inlet_event.extra}"
+            loaded_manifests.append(_load({"manifest": inlet_event.extra["manifest"]}))
+        return loaded_manifests
 
-    load()
+    @task(outlets=[website])
+    def generate_website(outlet_events):
+        log.info(f"Loading {config.fhir}")
+        outlet_events[website].extra = {"message": f"loaded {website.uri}"}
+
+    load() >> generate_website()
 
 
 load_fhir_dag()

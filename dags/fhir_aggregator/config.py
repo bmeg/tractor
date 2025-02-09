@@ -6,30 +6,48 @@ from typing import Union
 import yaml
 from pydantic import BaseModel, ValidationError, Field
 
+from pydantic import BaseModel, Field, model_validator
+from typing import List, Optional
+
+
+class Default(BaseModel):
+    bucket: str
+    expected_files: List[str]
+
+
+class FHIRConfig(BaseModel):
+    project_id: str
+    location_id: str
+    fhir_store_id: str
+
+
+class Project(BaseModel):
+    id: str
+    bucket: Optional[str] = None
+    expected_files: Optional[List[str]] = None
+
 
 class Config(BaseModel):
-    """Configuration parameters for the data pipeline."""
+    defaults: Default
+    projects: List[Project]
+    fhir: FHIRConfig
 
-    prefix: str = Field(..., description="Prefix for DAG and dataset IDs.")
-    bucket: str = Field(
-        ...,
-        description="Name of the Google Cloud Storage bucket containing input data.",
-    )
-    expected_files: list[str] = Field(
-        ..., description="List of expected file names in the input bucket."
-    )
-    output_bucket: str = Field(
-        ...,
-        description="Name of the Google Cloud Storage bucket for storing transformed data.",
-    )
-    project_id: str = Field(..., description="Your Google Cloud Project ID.")
-    location_id: str = Field(
-        ...,
-        description="The location of your Google Cloud project (e.g., 'us-central1').",
-    )
-    fhir_store_id: str = Field(
-        ..., description="The ID of your Google Healthcare FHIR store."
-    )
+    @model_validator(mode="after")
+    def set_defaults(self, values):
+        if not self.projects or len(self.projects) == 0:
+            raise ValidationError("Expected at least one project")
+        if not self.defaults:
+            raise ValidationError("Expected default config")
+        if not self.fhir:
+            raise ValidationError("Expected fhir config")
+        for p in self.projects:
+            if not p.bucket:
+                p.bucket = self.defaults.bucket
+            if not p.expected_files:
+                p.expected_files = self.defaults.expected_files
+
+        return self
+
 
 
 def load_config(config_path: Union[str, Path]) -> Config:
