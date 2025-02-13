@@ -24,7 +24,9 @@ inlet_datasets = []
 for project in config.projects:
     inlet_datasets.append(Dataset(f"{project.id}-processed"))
 
-website = Dataset(f"{config.fhir.project_id}/{config.fhir.fhir_store_id}-static_files")
+website = Dataset(
+    f"website-{config.fhir.project_id}/{config.fhir.fhir_store_id}-static_files"
+)
 
 
 @dag(

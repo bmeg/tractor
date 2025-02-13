@@ -21,14 +21,13 @@ except Exception as e:
 
 dags = []
 for project in config.projects:
-    prefix = project.id
 
     @dag(
-        dag_id=f"{prefix}-extract",
+        dag_id=f"{project.id}-extract",
         start_date=datetime(2024, 1, 1),
         schedule=None,
         catchup=False,
-        tags=["extract", prefix],
+        tags=["extract", project.id],
         render_template_as_native_obj=True,
         doc_md="""# Ingest Data DAG
     
@@ -57,39 +56,47 @@ for project in config.projects:
     """,
     )
     def ingest_data_dag(**kwargs):
-    
-        outlet_dataset = Dataset(f"{prefix}-raw")
-    
+        # create local variables private to the DAG
+        project_id = project.id
+        # convention is that the project id is used as a prefix aka folder
+        bucket_prefix = project.id
+        # each project can have its own bucket
+        project_bucket = project.bucket
+        project_expected_files = project.expected_files
+
+        outlet_dataset = Dataset(f"{project_id}-raw")
+
         @task(outlets=[outlet_dataset])
         def create_and_update_dataset_task(outlet_events, *args, **kwargs):
             """Creates a manifest of files in GCS, filtering by prefix, and updates the dataset."""
-            try:
-                hook = GCSHook()
-                bucket_prefix = ""
-                log.info(f"listing {config.bucket} {bucket_prefix}")
-                manifest = hook.list(bucket_name=config.bucket, prefix=bucket_prefix)
-                outlet_events[outlet_dataset].extra = {"manifest": manifest}
-                return {"manifest": manifest}
-            except Exception as e:
-                log.exception(f"Error creating manifest and updating dataset: {e}")
-                raise AirflowException(f"Error creating manifest and updating dataset: {e}")
-    
+            hook = GCSHook()
+            log.info(f"listing {project_bucket} {bucket_prefix}")
+            manifest = hook.list(bucket_name=project_bucket, prefix=bucket_prefix)
+            missing_files = [_ for _ in project_expected_files if _ not in manifest]
+            if missing_files:
+                log.warning(f"manifest: {manifest} missing {missing_files} from project_expected_files {project_expected_files}")
+                raise ValueError(
+                    f"The following files were not found in {project_bucket} {bucket_prefix}: {missing_files}"
+                )
+            outlet_events[outlet_dataset].extra = {"manifest": manifest}
+            return {"manifest": manifest}
+
         @task(inlets=[outlet_dataset])
         def download_files_task(inlet_events):
             """Downloads files from GCS."""
             download_dir = "/tmp/data"
             os.makedirs(download_dir, exist_ok=True)
             extra = inlet_events[outlet_dataset][-1].extra
+            assert "manifest" in extra
             for file_path in extra["manifest"]:
                 try:
-                    file_name = file_path.replace(f"gs://{config.bucket}/", "")
+                    file_name = file_path.replace(f"gs://{project_bucket}/", "")
                     log.info(f"Downloaded (mock) {file_path} {file_name}")
                 except Exception as e:
                     log.exception(f"Error downloading {file_path}: {e}")
                     raise AirflowException(f"Error downloading {file_path}: {e}")
-    
-        create_and_update_dataset_task() >> download_files_task()
 
+        create_and_update_dataset_task() >> download_files_task()
 
     dags.append(ingest_data_dag())
 

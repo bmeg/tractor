@@ -37,6 +37,7 @@ except Exception as e:
 dags = []
 for project in config.projects:
     prefix = project.id
+
     @dag(
         dag_id=f"{prefix}-transform",
         start_date=datetime(2024, 1, 1),
@@ -80,9 +81,7 @@ for project in config.projects:
             try:
                 transformed_filenames = []
                 for _ in processed_file_names:
-                    transformed_filename = _.replace(
-                        f"{prefix}/", f"{prefix}/R4/"
-                    )
+                    transformed_filename = _.replace(f"{prefix}/", f"{prefix}/R4/")
                     transformed_filenames.append(transformed_filename)
                 return transformed_filenames
 
@@ -120,7 +119,6 @@ for project in config.projects:
             return transformed_manifest
 
         transform()
-
 
     dags.append(transform_dag())
 

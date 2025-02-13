@@ -44,10 +44,11 @@ class Config(BaseModel):
             if not p.bucket:
                 p.bucket = self.defaults.bucket
             if not p.expected_files:
-                p.expected_files = self.defaults.expected_files
+                p.expected_files = [f"{p.id}/{_}" for _ in self.defaults.expected_files]
+            else:
+                p.expected_files = [f"{p.id}/{_}" for _ in p.expected_files]
 
         return self
-
 
 
 def load_config(config_path: Union[str, Path]) -> Config:
