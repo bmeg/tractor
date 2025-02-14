@@ -61,18 +61,16 @@ for project in config.projects:
     
     **Functionality:**
     
-    1.  Triggered when the `ingest_data_dag-raw` dataset is updated.
+    1.  Triggered when the `<ingest_data_dag>-raw` dataset is updated.
     2. Reads the manifest of ingested files from the upstream DAG's inlet dataset.
-    3.  Iterates through the ingested files.
-    4.  Performs transformations on each file (currently a placeholder).
-    5.  Uploads the transformed files to the specified GCS bucket.
-    6.  Creates a manifest of transformed files.
-    7.  Updates the Airflow outlet dataset with the manifest of transformed files.
-    
+    3.  Downloads the selected files to a local directory.
+    4.  Performs transformations via a bash command
+    5.  On success, updates the Airflow dataset with the transformed file manifest and uploads the transformed files to the specified GCS bucket.
+    6.  Updates the Airflow outlet dataset with the manifest of transformed files.
     
     **Considerations:**
     
-    *   The placeholder transformation needs to be replaced with your actual transformation logic.
+    *   Increase templating, logging, and error handling for production use.
     *   Error handling and logging should be enhanced for production use.
     *   The input directory is hardcoded as `/tmp/data`.  Change as necessary.
     """,

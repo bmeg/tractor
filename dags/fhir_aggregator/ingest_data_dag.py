@@ -45,13 +45,12 @@ for project in config.projects:
     1.  Reads configuration from the specified config file.
     2.  Lists the contents of the specified GCS bucket, filtering by prefix.
     3.  Creates a manifest containing only the file paths of the matching files.
+    4.  Checks the if there has been any changes 
     4.  Updates the Airflow dataset (outlet) with the generated manifest.
-    5.  Downloads the selected files to a local directory.
     
     **Considerations:**
     
     *   Ensure the service account used by Airflow has the necessary permissions to access GCS.
-    *   The `/tmp/data` directory is used to store downloaded files. Consider using a more robust and managed location for production environments.
     
     """,
     )
