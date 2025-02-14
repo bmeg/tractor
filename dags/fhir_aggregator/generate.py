@@ -1,16 +1,11 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
-from datetime import datetime
 
-from airflow.datasets import Dataset
-from airflow.decorators import task, dag
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.exceptions import AirflowException
 
-from fhir_aggregator.config import load_default_config, Config
+from fhir_aggregator.config import load_default_config
 
 log = logging.getLogger(__name__)
 

@@ -4,9 +4,11 @@ import pathlib
 from tractor.mkdag import generate
 log = logging.getLogger(__name__)
 
-configs = pathlib.Path("/opt/airflow/projects/stapi")
+config_path = "/opt/airflow/projects/stapi"
+
+configs = pathlib.Path(config_path)
 if not configs.exists():
-    log.warning(f"No configs found in {configs}")
+    log.warning(f"No configs found in {config_path}")
     exit()
 
 generated_dags = []

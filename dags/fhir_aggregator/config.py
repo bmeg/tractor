@@ -1,13 +1,12 @@
 import json
 import logging
 from pathlib import Path
+from typing import List, Optional
 from typing import Union
 
 import yaml
-from pydantic import BaseModel, ValidationError, Field
-
-from pydantic import BaseModel, Field, model_validator
-from typing import List, Optional
+from pydantic import BaseModel, model_validator
+from pydantic import ValidationError
 
 
 class Default(BaseModel):

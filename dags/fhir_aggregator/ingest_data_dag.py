@@ -55,7 +55,7 @@ for project in config.projects:
     
     """,
     )
-    def ingest_data_dag(**kwargs):
+    def ingest_data_dag():
         # create local variables private to the DAG
         project_id = project.id
         # convention is that the project id is used as a prefix aka folder

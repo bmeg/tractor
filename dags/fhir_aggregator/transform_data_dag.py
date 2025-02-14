@@ -2,18 +2,23 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
+import tempfile
 from datetime import datetime
+from typing import List
 
 from airflow.datasets import Dataset
 from airflow.decorators import task, dag
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from google.cloud import storage
 
 from fhir_aggregator.config import Config, load_default_config
+log = logging.getLogger(__name__)
 
 try:
     config = load_default_config()
 except Exception as e:
-    logging.error(f"Error loading config : {e}")
+    log.error(f"Error loading config : {e}")
     exit(0)
 
 
@@ -35,6 +40,7 @@ except Exception as e:
 #     return output_manifest
 
 dags = []
+
 for project in config.projects:
     prefix = project.id
 
@@ -71,52 +77,87 @@ for project in config.projects:
     *   The input directory is hardcoded as `/tmp/data`.  Change as necessary.
     """,
     )
-    def transform_dag(**kwargs):
+    def transform_dag():
 
+        # create local variables private to the DAG
         inlet_dataset = Dataset(f"{prefix}-raw")
         outlet_dataset = Dataset(f"{prefix}-processed")
 
-        def _transform(processed_file_names: list[str]) -> list[str]:
-            """Transforms data and creates a manifest of transformed files."""
-            try:
-                transformed_filenames = []
-                for _ in processed_file_names:
-                    transformed_filename = _.replace(f"{prefix}/", f"{prefix}/R4/")
-                    transformed_filenames.append(transformed_filename)
-                return transformed_filenames
+        project_id = project.id
+        # convention is that the project id is used as a prefix aka folder
+        bucket_prefix = project.id
+        # each project can have its own bucket
+        project_bucket = project.bucket
+        # use our own temp dir
+        tempdir = tempfile.mkdtemp()
 
-                # storage_client = storage.Client()
-                # output_bucket = storage_client.bucket(config.output_bucket)
-                # transformed_files = []
-                # input_dir = "/tmp/data"
-                #
-                # for file_data in manifest["files"]:
-                #     filepath = os.path.join(input_dir, file_data["name"])
-                #     if os.path.exists(filepath):
-                #         # Placeholder transformation. Replace this!
-                #         transformed_filename = file_data["name"].replace(
-                #             f"{config.prefix}/", f"{config.prefix}/R4/"
-                #         )
-                #         blob = output_bucket.blob(transformed_filename)
-                #         # blob.upload_from_string(...)  # Upload transformed data here
-                #         transformed_files.append(transformed_filename)
-                # return {"manifest": transformed_files}
-            except Exception as e:
-                print(f"Error transforming data: {e}")
-                return []
+        def list_files_recursive(directory) -> list[str]:
+            """List all files in a directory and its subdirectories."""
+            file_paths = []
+            for root, dirs, files in os.walk(directory):
+                for file in files:
+                    file_paths.append(str(os.path.join(root, file)).replace(directory + '/', '', 1))
+            return file_paths
 
-        @task(inlets=[inlet_dataset], outlets=[outlet_dataset])
-        def transform(inlet_events, outlet_events):
+        def on_failure_callback(context):
+            """Alert the team on failure, clean up the temp dir."""
+            cwd = os.getcwd()
+            state = context['ti'].state
+            print(f"on_failure_callback:\nstate: {state}\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}")
+            # clean up the temp dir
+            shutil.rmtree(tempdir)
+            log.info(f"Removed {tempdir}")
+
+        def on_success_callback(context):
+            """Update the outlets with the manifest, clean up the temp dir."""
+            cwd = os.getcwd()
+            log.info(f"on_success_callback\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}")
+            # update the outlets with the manifest
+            _outlets = context['task'].outlets
+            dir_name = os.path.join(tempdir, "OUTPUT")
+            manifest = [f"OUTPUT/{_}" for _ in list_files_recursive(dir_name)]
+            extra = {"manifest": manifest}
+            hook = GCSHook()
+            log.info(f"Uploading manifest to {project_bucket} {bucket_prefix}")
+            for file_name in manifest:
+                object_name = file_name.replace("OUTPUT/", "TESTING-OUTPUT/")
+                hook.upload(bucket_name=project_bucket, object_name=object_name, filename=file_name)
+
+            # upload the manifest to GCS
+            for outlet in _outlets:
+                context["outlet_events"][outlet].extra = extra
+                log.info(f"Updated outlet {outlet} with extra: {extra}")
+            # clean up the temp dir
+            shutil.rmtree(tempdir)
+            log.info(f"Removed {tempdir}")
+
+        def pre_execute(context):
+            """Change to the temp dir before executing the command."""
+            os.chdir(tempdir)
+            hook = GCSHook()
+            manifest = hook.list(bucket_name=project_bucket, prefix=bucket_prefix)
+            log.info(f"pre_execute listing {project_bucket} {bucket_prefix} {manifest}")
+            for object_name in manifest:
+                file_name = os.path.join(tempdir, object_name)
+                # Ensure the directory for file_name exists
+                os.makedirs(os.path.dirname(file_name), exist_ok=True)
+                # download the data
+                location = hook.download(bucket_name=project_bucket, object_name=object_name, filename=file_name)
+                log.info(f"Downloaded {object_name} to {file_name} at location {location}")
+
+        @task.bash(
+            task_id='transform',
+            cwd=tempdir,
+            inlets=[inlet_dataset],
+            outlets=[outlet_dataset],
+            pre_execute=pre_execute,
+            on_success_callback=on_success_callback,
+            on_failure_callback=on_failure_callback,
+            retries=0,
+        )
+        def transform():
             """Reads the manifest from the inlet dataset."""
-            events = inlet_events[inlet_dataset]
-            assert len(events) > 0, "Should have at least 1 event"
-            inlet_event = events[-1]
-            assert (
-                "manifest" in inlet_event.extra
-            ), f"manifest not found in inlet_event {inlet_event.extra}"
-            transformed_manifest = _transform(inlet_event.extra["manifest"])
-            outlet_events[outlet_dataset].extra = {"manifest": transformed_manifest}
-            return transformed_manifest
+            return f"pwd;fa_submit prep {bucket_prefix}/META OUTPUT/R4/{bucket_prefix}/META --transformers part-of,vocabulary,validate --fhir-version R4"
 
         transform()
 
