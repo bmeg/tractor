@@ -1,0 +1,27 @@
+# config_test.yaml
+defaults:
+  bucket: "fhir-aggregator-public"
+  expected_files:
+    - META/ResearchStudy.ndjson
+    - META/ResearchSubject.ndjson
+    - META/Patient.ndjson
+    - META/DocumentReference.ndjson
+
+projects:
+  - id: 1KG-Phase1Thru3
+  - id: GTEX-V10
+  - id: IG
+    expected_files:
+      - META/part-of-search-parameter.ndjson
+  - id: TCGA-BRCA
+  - id: TCGA-HNSC
+  - id: TCGA-KIRC
+  - id: TCGA-LUAD
+  - id: TCGA-LUSC
+
+# for loading data into FHIR store
+# this should be filled in by Config.py w/ intelligent defaults
+fhir:
+  project_id: "test-project-id"
+  location_id: "us-central1"
+  fhir_store_id: "test-fhir-store-id"
