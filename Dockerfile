@@ -7,5 +7,5 @@ RUN apt update && apt install git -y
 
 # Install python packages you need:
 USER airflow
-RUN pip install json2html networkx
+RUN pip install json2html networkx py-tes
 RUN pip install git+https://github.com/FHIR-Aggregator/submission.git@feature/improve-doc
