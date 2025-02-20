@@ -1,0 +1,34 @@
+# a Project object drives DAG generation
+id: test
+name: Test
+
+# a Default object
+defaults:
+  bucket: my-bucket
+  bucket_scheme: gs
+  bucket_connection_id: my-connection
+  operator_type: BashOperator
+  extract_commands:
+    - echo "extract"
+  load_commands:
+    - echo "transform"
+# A project has 1-* sources.
+# Each source has a set of ETL DAGs
+# extract: a source's inputs will be optionally "sensed" that is checked for update and then extracted to  a dataset {project-id}-raw and stored in a bucket
+# transform: an update to source's raw dataset will trigger a transform which will store its result dataset {project-id}-processed and stored in a bucket
+# load: an update to source's processed dataset will trigger a load which will store its result dataset {project-id}-final and stored in a bucket
+# An input/output object are DagConfig objects subclasses based on py-tes' tes.Task object
+# The DagConfig will accept a list of strings, or dictionaries.
+# The project's defaults will be used to fill in any missing values.
+# A user can override the defaults by providing a value in the input/output object.
+sources:
+  # A Source object
+  - id: source1 # A unique identifier for the source within the project, used in the DAGs. required
+    name: Source 1 # A human-readable name for the source. required
+    description: The first source # A description of the source. optional
+    inputs: # A list of input paths that the source will use. required
+      - foo
+      - bar
+    outputs: # A list of output paths that the source will produce. required
+      - baz
+      - qux

@@ -1,0 +1,27 @@
+# This is a test pipeline that will be used to test the Tractor pipeline generator.
+id: test
+name: Test 3 Project
+load_commands:
+    - echo "load-all"
+
+defaults:
+    bucket: bucket1
+    bucket_scheme: s3
+    operator_type: airflow-operator://BashOperator
+    extract_commands:
+        - echo "extract"
+    transform_commands:
+        - echo "transform"
+sources:
+    - id: tcga
+      name: TCGA ETL
+      inputs:
+        - input/tcga/file1.txt
+      outputs:
+        - output/tcga/file1.json
+    - id: gcd
+      name: GCD ETL
+      inputs:
+        - input/gcd/file1.txt
+      outputs:
+        - output/gcd/file1.json
