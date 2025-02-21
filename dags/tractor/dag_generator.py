@@ -1,5 +1,6 @@
 import importlib
 import logging
+from copy import deepcopy
 from datetime import datetime
 from typing import Protocol
 
@@ -180,29 +181,43 @@ class AggregateLoadDagGenerator(BaseDAGGenerator):
 
         Args:
             operator_parms: dictionary of parameters for the operator
+            executors: list of executors to create the operators
             source: configuration tes.Task
         """
         operators = []
         if not executors:
             return operators
 
+        original_operator_parms = deepcopy(operator_parms)
+        original_task_id = original_operator_parms["task_id"]
+
         add_suffix = False
         suffix = 0
-        original_task_id = operator_parms["task_id"]
+
         if executors and len(executors) > 1:
             add_suffix = True
 
-        for executor in executors:
+        for i, executor in enumerate(executors):
+            _operator_parms = deepcopy(original_operator_parms)
+
+            # Remove outlets and inlets if not the first or last executor
+            if i != 0:
+                _operator_parms.pop("inlets", None)
+            if i != len(executors) - 1:
+                _operator_parms.pop("outlets", None)
+
             assert isinstance(executor, tes.Executor), f"Expected tes.Executor, got {type(executor)}={executor}"
             if add_suffix:
-                operator_parms["task_id"] = f"{original_task_id}-{suffix}"
+                _operator_parms["task_id"] = f"{original_task_id}-{suffix}"
                 suffix += 1
+
+            log.info(f"Creating operator: {_operator_parms['task_id']} with image: {executor.image} {_operator_parms}")
             if executor.image == "airflow-operator://BashOperator":
-                operator = BashOperator(**operator_parms, bash_command=executor.command)
+                operator = BashOperator(**_operator_parms, bash_command=executor.command)
             elif executor.image == "airflow-operator://PythonOperator":
-                operator = PythonOperator(**operator_parms, python_callable=ensure_python_callable(executor.command))
+                operator = PythonOperator(**_operator_parms, python_callable=ensure_python_callable(executor.command))
             else:
-                operator = TESOperator(**operator_parms, tes_task=source)
+                operator = TESOperator(**_operator_parms, tes_task=source)
             operators.append(operator)
         return operators
 

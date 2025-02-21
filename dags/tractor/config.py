@@ -100,7 +100,6 @@ class DagConfig(tes.Task):
             self.extract_commands = self.defaults.extract_commands
         if not self.transform_commands:
             self.transform_commands = self.defaults.transform_commands
-        print(self)
         ensure_etl_commands(self, self.defaults.operator_type)
 
     def ensure_schedule(self):
