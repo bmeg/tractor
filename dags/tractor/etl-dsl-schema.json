@@ -1,10 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ETL DSL Schema",
-  "description": "A JSON schema for defining a DSL for ETL projects.",
+  "description": "A JSON schema for defining a DSL for ETL projects.  Defines a “scatter gather” or extracting and transforming related sources",
   "type": "object",
   "definitions": {
     "Command": {
+      "description": "A command to be executed by the ETL project.",
       "oneOf": [
         { "type": "string" },
         {
@@ -69,6 +70,7 @@
       "required": ["bucket", "bucket_prefix", "bucket_scheme"]
     },
     "StorageObject": {
+      "description": "A storage object used by the ETL project.",
       "oneOf": [
         { "type": "string" },
         {
@@ -103,6 +105,7 @@
     },
     "Source": {
       "type": "object",
+      "description": "A data source for the ETL project.",
       "properties": {
         "id": {
           "type": "string",
@@ -160,11 +163,13 @@
       "description": "A markdown description of the ETL project."
     },
     "defaults": {
-      "$ref": "#/definitions/Defaults"
+      "$ref": "#/definitions/Defaults",
+        "description": "Default values to be used for each source in the ETL project."
     },
     "sources": {
       "type": "array",
-      "items": { "$ref": "#/definitions/Source" }
+      "items": { "$ref": "#/definitions/Source" },
+      "description": "A list of data sources for the ETL project."
     },
     "load_commands": {
       "type": "array",
