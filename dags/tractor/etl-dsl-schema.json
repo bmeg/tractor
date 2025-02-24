@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ETL DSL Schema",
+  "description": "A JSON schema for defining a DSL for ETL projects.",
+  "type": "object",
+  "definitions": {
+    "Command": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "operator_type": {
+              "type": "string",
+              "description": "The type of operator to be used. See https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/index.html for more information."
+            },
+            "command": {
+              "type": "string",
+              "description": "The command to be executed."
+            }
+          },
+          "required": ["operator_type", "command"]
+        }
+      ]
+    },
+    "Defaults": {
+      "type": "object",
+      "description": "Default values to be used for the ETL project. See https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html, https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html, etc. for more information.",
+      "properties": {
+        "bucket": {
+          "type": "string",
+          "description": "The name of the bucket where data will be stored."
+        },
+        "bucket_prefix": {
+          "type": "string",
+          "description": "A prefix to be used for all data stored in the bucket."
+        },
+        "bucket_scheme": {
+          "type": "string",
+          "enum": ["s3", "gs", "abfs"],
+          "description": "The scheme used for accessing the bucket (e.g., s3).",
+          "default": "s3"
+        },
+        "operator_type": {
+          "type": "string",
+          "enum": ["PythonOperator", "BashOperator", "TESOperator"],
+          "description": "The default operator type to be used for executing commands.",
+          "default": "BashOperator"
+        },
+        "extract_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "Default extraction commands to be used if not specified in the sources section.",
+          "default": null
+        },
+        "transform_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "Default transformation commands to be used if not specified in the sources section.",
+          "default": null
+        },
+        "load_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "Default load commands to be used if not specified in the sources section.",
+          "default": null
+        }
+      },
+      "required": ["bucket", "bucket_prefix", "bucket_scheme"]
+    },
+    "StorageObject": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "The URL of the storage object."
+            },
+            "path": {
+              "type": "string",
+              "description": "The path of the storage object."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["FILE", "DIRECTORY"],
+              "default": "FILE",
+              "description": "The type of the storage object."
+            },
+            "name": {
+              "type": "string",
+              "description": "The name of the storage object."
+            },
+            "description": {
+              "type": "string",
+              "description": "The description of the storage object."
+            }
+          },
+          "required": ["path"]
+        }
+      ]
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "A unique identifier for the data source."
+        },
+        "extract_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "A list of commands to extract data from the source."
+        },
+        "transform_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "A list of commands to transform the extracted data."
+        },
+        "load_commands": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Command" },
+          "description": "A list of commands to load the transformed data."
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/StorageObject" },
+          "description": "A list of input files required by the extraction and transform commands."
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/StorageObject" },
+          "description": "A list of output files generated by the extraction and transform commands."
+        }
+      },
+      "required": ["id"],
+      "oneOf": [
+        { "required": ["extract_commands"] },
+        { "required": ["transform_commands"] },
+        { "required": ["load_commands"] }
+      ],
+      "anyOf": [
+        { "required": ["inputs"] },
+        { "required": ["outputs"] }
+      ]
+    }
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "A unique identifier for the ETL project."
+    },
+    "name": {
+      "type": "string",
+      "description": "The human readable name of the ETL project."
+    },
+    "description": {
+      "type": "string",
+      "description": "A markdown description of the ETL project."
+    },
+    "defaults": {
+      "$ref": "#/definitions/Defaults"
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Source" }
+    },
+    "load_commands": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Command" },
+      "description": "Commands to load the transformed data into the target system."
+    }
+  },
+  "required": ["id", "defaults", "sources"]
+}
