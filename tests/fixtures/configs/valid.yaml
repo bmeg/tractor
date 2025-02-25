@@ -1,0 +1,5 @@
+# A DagConfig object
+id: test
+name: Test
+inputs:
+  - foo

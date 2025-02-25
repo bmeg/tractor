@@ -1,0 +1,6 @@
+services:
+  funnel:
+    image: quay.io/ohsu-comp-bio/funnel:latest
+    ports:
+      - "8000:8000"
+    command: server run
