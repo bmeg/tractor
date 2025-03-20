@@ -1,0 +1,18 @@
+id: "minimal_project"
+name: "Minimal ETL Project"
+description: "A minimal ETL project configuration."
+defaults:
+  bucket: "my-bucket"
+  bucket_scheme: "s3"
+  bucket_prefix: "my-prefix"
+  operator_type: "BashOperator"
+
+sources:
+  - id: "source_1"
+    extractor:
+      id: "extract_1"
+      name: "Extract Task"
+      command: "echo Extracting data"
+      description: "Extract data one outputs"
+      outputs:
+        - extracted-data

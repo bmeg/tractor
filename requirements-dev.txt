@@ -3,3 +3,4 @@ mypy
 black
 networkx
 py-tes
+DeepDiff

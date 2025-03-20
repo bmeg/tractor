@@ -1,12 +1,33 @@
 import json
 import logging
+import re
 from pathlib import Path
 from typing import List, Optional
 from typing import Union
 
 import yaml
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from pydantic import BaseModel, model_validator
 from pydantic import ValidationError
+
+log = logging.getLogger(__name__)
+
+
+def projects(config):
+    """Deprecated?"""
+    hook = GCSHook()
+    prefix = ""
+    log.info(f"listing {config.bucket} {prefix}")
+    manifest = hook.list(bucket_name=config.bucket, prefix=prefix)
+
+    _sources = set([_.split("/")[0] for _ in manifest])
+    # Remove items ending with 'md' or 'R4'
+    _sources = {
+        source for source in _sources if not re.search(r"(md|R4|OUTPUT|TEST)$", source)
+    }
+
+    log.info(f"_sources: {_sources}")
+
 
 
 class Default(BaseModel):

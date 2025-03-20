@@ -1,0 +1,38 @@
+id: "minimal_project"
+name: "Minimal ETL Project"
+description: "A minimal ETL project configuration."
+defaults:
+  bucket: "my-bucket"
+  bucket_scheme: "s3"
+  bucket_prefix: "my-prefix"
+  operator_type: "BashOperator"
+  callbacks:
+    pre_execute: tractor.etl_dsl.stub_callbacks.stub_pre_execute
+    on_success: tractor.etl_dsl.stub_callbacks.stub_on_success
+    on_failure: tractor.etl_dsl.stub_callbacks.stub_on_failure
+
+loader:
+  id: "load_1"
+  name: "Load Task"
+  command: "echo Loading data"
+  description: "Load data one"
+  inlets:
+    - uri: "source_1-processed"
+    - uri: "source_2-processed"
+sources:
+  - id: "source_1"
+    transformer:
+      id: "transform_1"
+      name: "Transform Task"
+      command: "echo Transforming data"
+      description: "Transform data 1"
+      outputs:
+        - source_1/processed-data
+  - id: "source_2"
+    transformer:
+      id: "transform_2"
+      name: "Transform Task"
+      command: "echo Transforming data"
+      description: "Transform data 2"
+      outputs:
+        - source_2/processed-data

@@ -5,14 +5,13 @@ import os
 import shutil
 import tempfile
 from datetime import datetime
-from typing import List
 
 from airflow.datasets import Dataset
 from airflow.decorators import task, dag
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from google.cloud import storage
 
-from fhir_aggregator.config import Config, load_default_config
+from fhir_aggregator.config import load_default_config
+
 log = logging.getLogger(__name__)
 
 try:

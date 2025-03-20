@@ -1,13 +1,11 @@
-from datetime import datetime
+import logging
 from typing import Any
 
-from airflow import DAG
-from airflow.exceptions import AirflowException
-from airflow.models import BaseOperator, Connection
-from airflow.hooks.base import BaseHook
 import tes
+from airflow.exceptions import AirflowException
+from airflow.hooks.base import BaseHook
+from airflow.models import BaseOperator, Connection
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -45,17 +43,3 @@ class TESOperator(BaseOperator):
         if task.state == "COMPLETE":
             return task.outputs
         raise AirflowException(f"Task failed: {task.state} {task}")
-
-
-# print("FOOOO")
-# with DAG(dag_id="tes_hello_world", start_date=datetime(2021, 1, 1)) as dag:
-#     # Create a TES task
-#     task = tes.Task(
-#         name="Hello World",
-#         executors=[tes.Executor(image="alpine", command=["echo", "hello world"])],
-#     )
-#     # Create a TES operator
-#     operator = TESOperator(task_id="hello_world", dag=dag, tes_task=task)
-#
-#     operator
-# dag
