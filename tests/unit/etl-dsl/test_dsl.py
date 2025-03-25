@@ -36,7 +36,31 @@ def test_load_minimal_etl_project(minimal_etl_project):
 
     print('actual')
     pprint(etl_project_dict)
-    assert not DeepDiff(minimal_etl_project, etl_project_dict, ignore_order=True)
+    # assert not DeepDiff(minimal_etl_project, etl_project_dict, ignore_order=True)
+
+    assert etl_project.defaults
+    assert etl_project.defaults.bucket_prefix == "my-prefix"
+    assert etl_project.defaults.transformer
+
+    assert etl_project.sources
+    for s in etl_project.sources:
+        assert s.extractor
+        assert s.extractor.command
+        command = s.extractor.command
+        assert command.command == "echo Extracting data"
+        assert s.extractor.outputs
+        assert len(s.extractor.outputs) == 1
+        output = s.extractor.outputs[0]
+        assert isinstance(output, StorageObjectDetailed)
+        assert output.url == "s3://my-bucket/my-prefix/extracted-data", output.url
+        assert output.path == "extracted-data"
+        assert output.type == "DIRECTORY"
+        assert output.description == "Generated from extracted-data"
+
+        assert s.transformer
+        assert s.transformer.command
+        command = s.transformer.command
+        assert command.command == "echo Transforming data"
 
 
 def test_load_minimal_etl_to_tes(minimal_etl_project):

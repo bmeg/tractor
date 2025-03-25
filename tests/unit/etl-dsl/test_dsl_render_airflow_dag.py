@@ -2,7 +2,7 @@ from pprint import pprint
 
 from airflow.operators.bash import BashOperator
 
-from tractor.etl_dsl.airflow import AggregateLoadDagGenerator
+from tractor.etl_dsl.generators.dag_generator import AggregateLoadDagGenerator
 from tractor.etl_dsl.model import ETLProject
 
 

@@ -6,6 +6,13 @@ defaults:
   bucket_scheme: "s3"
   bucket_prefix: "my-prefix"
   operator_type: "BashOperator"
+  transformer:
+    id: "transform_1"
+    name: "Transform Task"
+    command: "echo Transforming data"
+    description: "Transform data 1"
+    outputs:
+      - source_1/processed-data
 
 sources:
   - id: "source_1"
