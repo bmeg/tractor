@@ -27,13 +27,13 @@ class AggregateLoadDagGenerator(BaseModel):
         :return:
         """
         # Create a list of DAGs
-        assert self.project.sources, "Expected sources to be created"
+        assert len(self.project.sources) > 0, "Expected sources to be created"
         project = self.project
         dags = []
 
         for source in project.sources:
             for etl_verb in ['extractor', 'transformer', 'loader']:
-                task = getattr(source, f"{etl_verb}")
+                task = getattr(source, etl_verb)
                 if task:
                     task_id = f"{project.id}-{source.id}-{etl_verb}"
                     dag_id = task_id
