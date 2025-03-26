@@ -23,5 +23,8 @@ Airflow based builds
 
 ## test
 
-* [unit tests](tests/unit)
-* 
+* [unit tests](tests/unit) - use `run ./run_tests.sh to execute the tests and generate the coverage badge.`
+
+
+
+![Coverage](docs/images/coverage.svg) 
