@@ -16,6 +16,7 @@ def get_tes_connection(connection_id="TES") -> Connection:
 
 class TESOperator(BaseOperator):
     """Implement a Task Execution Service (TES) operator."""
+
     tes_task: tes.Task
 
     def __init__(self, tes_task, *args, **kwargs):

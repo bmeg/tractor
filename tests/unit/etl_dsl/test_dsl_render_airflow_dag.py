@@ -12,12 +12,12 @@ def test_load_multi_source(multi_source_etl_project):
     etl_project = ETLProject(**multi_source_etl_project)
 
     etl_project.apply_defaults()  # expand defaults
-    print('project:')
+    print("project:")
     pprint(etl_project)
 
     generator = AggregateLoadDagGenerator(project=etl_project)
     dags = generator.mkdags()
-    print('dags:')
+    print("dags:")
     pprint(dags)
     assert len(dags) == 3
     transform_dags = [_ for _ in dags if _.dag_id.endswith("transformer")]
@@ -39,8 +39,11 @@ def test_load_multi_source(multi_source_etl_project):
     assert load_task.operator_class == BashOperator
     assert len(load_task.inlets) == 2
     assert len(load_task.outlets) == 1
-    assert sorted([_.uri for _ in load_task.inlets]) == ['source_1-processed', 'source_2-processed']
-    print('load_task.outlets:')
+    assert sorted([_.uri for _ in load_task.inlets]) == [
+        "source_1-processed",
+        "source_2-processed",
+    ]
+    print("load_task.outlets:")
     pprint(load_task.outlets)
     assert len(load_task.outlets) == 1
-    assert sorted([_.uri for _ in load_task.outlets]) == ['minimal_project-loaded']
+    assert sorted([_.uri for _ in load_task.outlets]) == ["minimal_project-loaded"]

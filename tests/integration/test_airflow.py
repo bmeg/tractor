@@ -7,10 +7,17 @@ def test_airflow_connection(airflow_url):
     """Test connection to the remote Airflow instance."""
     assert airflow_url is not None, "Airflow URL is not set"
     response = requests.get(f"{airflow_url}/health")
-    assert response.status_code == 200, "Failed to connect to the remote Airflow instance"
+    assert (
+        response.status_code == 200
+    ), "Failed to connect to the remote Airflow instance"
     health_status = response.json()
-    assert health_status["metadatabase"]["status"] == "healthy", "Airflow metadatabase is not healthy"
-    assert health_status["scheduler"]["status"] == "healthy", "Airflow scheduler is not healthy"
+    assert (
+        health_status["metadatabase"]["status"] == "healthy"
+    ), "Airflow metadatabase is not healthy"
+    assert (
+        health_status["scheduler"]["status"] == "healthy"
+    ), "Airflow scheduler is not healthy"
+
 
 #
 #

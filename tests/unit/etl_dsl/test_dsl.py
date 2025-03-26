@@ -3,7 +3,12 @@ import yaml
 from deepdiff import DeepDiff
 from pprint import pprint
 
-from tractor.etl_dsl.model import ETLProject, CommandDetailed, StorageObjectDetailed, Task
+from tractor.etl_dsl.model import (
+    ETLProject,
+    CommandDetailed,
+    StorageObjectDetailed,
+    Task,
+)
 
 
 def test_minimal_etl_project_valid(minimal_etl_project, schema):
@@ -28,13 +33,13 @@ def test_load_minimal_etl_project(minimal_etl_project):
     Asserts:
         bool: True if the ETL project data matches the expected values.
     """
-    print('expected')
+    print("expected")
     pprint(minimal_etl_project)
 
     etl_project = ETLProject(**minimal_etl_project)
     etl_project_dict = etl_project.model_dump(exclude_none=True)
 
-    print('actual')
+    print("actual")
     pprint(etl_project_dict)
     # assert not DeepDiff(minimal_etl_project, etl_project_dict, ignore_order=True)
 
@@ -84,7 +89,7 @@ def test_load_minimal_etl_to_tes(minimal_etl_project):
     assert isinstance(our_task.command, CommandDetailed)
     our_command: CommandDetailed = our_task.command
     tes_task = our_task.to_tes()
-    print('actual')
+    print("actual")
     pprint(tes_task)
     assert tes_task.id == our_task.id
     assert tes_task.name == our_task.name
@@ -117,7 +122,7 @@ def test_load_minimal_etl_to_tes(minimal_etl_project):
             assert _.type == tes_task.outputs[i].type
 
     # check datasets
-    print('outlets', our_task.outlets)
+    print("outlets", our_task.outlets)
     assert len(our_task.outlets) == 1
     assert our_task.outlets[0].uri == f"{source.id}-raw"
 
@@ -131,7 +136,7 @@ def test_load_etl_project(multi_source_etl_project, schema):
     etl_project.apply_defaults()  # expand defaults
 
     pprint(etl_project)
-    assert len(etl_project.sources) == len(multi_source_etl_project['sources'])
+    assert len(etl_project.sources) == len(multi_source_etl_project["sources"])
     assert len(etl_project.sources) == 2
     assert etl_project.loader
     assert isinstance(etl_project.loader.command, CommandDetailed)

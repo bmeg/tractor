@@ -2,6 +2,7 @@ import logging
 import re
 import urllib.parse
 from copy import deepcopy
+from typing import Optional
 
 import tes
 import yaml
@@ -28,44 +29,47 @@ def scan_bucket_for_sources(defaults) -> list[ETLSource]:  # pragma: no cover
 
     _sources = set([_.split("/")[0] for _ in manifest])
 
-    def set_defaults(_defaults, source):
-        """Add defaults to a source."""
-        _defaults = deepcopy(_defaults)
-        for cmd in _defaults.transform_commands:
-            executor: tes.Executor = cmd
-            executor.command = executor.command.replace("{bucket_prefix}", source)
-
-        return _defaults
+    # def set_defaults(_defaults, source):
+    #     """Add defaults to a source."""
+    #     _defaults = deepcopy(_defaults)
+    #     for cmd in _defaults.transform_commands:
+    #         executor: tes.Executor = cmd
+    #         executor.command = executor.command.replace("{bucket_prefix}", source)
+    #
+    #     return _defaults
 
     # Remove items based on suffix
-    _sources = [
+    _sources_list = [
         ETLSource(
             id=source,
             # name=source,
             # inputs=[StorageObject(url=f"gs://{defaults.bucket}/{source}")],
             # outputs=[StorageObject(url=f"gs://{defaults.bucket}/OUTPUT/R4/{source}")],
             # defaults=set_defaults(defaults, source)
-        ) for source in _sources if not re.search(r"(md|R4|OUTPUT|TEST|txt)$", source) and 'TESTING' not in source
+        )
+        for source in _sources
+        if not re.search(r"(md|R4|OUTPUT|TEST|txt)$", source)
+        and "TESTING" not in source
     ]
 
-    return _sources
+    return _sources_list
 
 
 def get_source_manifest(outlets, outlet_events, *argc, **kwargs):  # pragma: no cover
     """Get source details."""
     assert len(outlets) == 1, (argc, kwargs)
     outlet = outlets[0]
-    source_dict = outlet.extra['source']
-    inputs = source_dict['inputs']
-    expected_files = source_dict['defaults'].get('expected_files', [])
+    source_dict = outlet.extra["source"]
+    inputs = source_dict["inputs"]
+    expected_files = source_dict["defaults"].get("expected_files", [])
 
     assert len(inputs) == 1, inputs
-    input_url = inputs[0]['url']
+    input_url = inputs[0]["url"]
     parsed_url = urllib.parse.urlparse(input_url)
-    if parsed_url.scheme != 'gs':
+    if parsed_url.scheme != "gs":
         raise ValueError("URL must start with 'gs://'")
     bucket = parsed_url.netloc
-    path = parsed_url.path.lstrip('/')
+    path = parsed_url.path.lstrip("/")
 
     hook = GCSHook()
     prefix = path
@@ -76,35 +80,35 @@ def get_source_manifest(outlets, outlet_events, *argc, **kwargs):  # pragma: no 
         client = hook.get_conn()
         bucket_obj = client.bucket(bucket)
         blob = bucket_obj.get_blob(blob_name=file)
-        extra_blob_info = {
-            "bucket": bucket_obj.name,
-            "gcp_conn_id": hook.gcp_conn_id}
+        extra_blob_info = {"bucket": bucket_obj.name, "gcp_conn_id": hook.gcp_conn_id}
         blobs.append(blob_to_dict(blob, extra=extra_blob_info))
-    blob_names = [blob['name'] for blob in blobs]
+    blob_names = [blob["name"] for blob in blobs]
     for expected_file in expected_files:
         expected_blob_name = f"{path}/{expected_file}"
-        assert expected_blob_name in blob_names, f"Expected file {expected_blob_name} not found in {blob_names})"
-    extra = {
-        "manifest": blobs,
-        "source": source_dict
-    }
+        assert (
+            expected_blob_name in blob_names
+        ), f"Expected file {expected_blob_name} not found in {blob_names})"
+    extra = {"manifest": blobs, "source": source_dict}
     outlet_events[outlet].extra = extra
     log.info(f"updated outlet: {outlet} with extra: {extra}")
 
 
 class GRIPServer(BaseModel):
     """GRIP Server."""
+
     url: str
 
 
 class GRIPDefaults(ETLProjectDefaults):
     """GRIP Default. We subclass ETLDefaults to add expected_files."""
+
     pass
 
 
 class GRIPProject(ETLProject):
     """FHIR Aggregator Project. We subclass ETLProject to add FHIR Server."""
-    grip_server: GRIPServer = None
+
+    grip_server: Optional[GRIPServer] = None
     defaults: GRIPDefaults
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -119,8 +123,8 @@ class GRIPProject(ETLProject):
         for source in self.sources:
             if isinstance(source, dict):
                 # Merge source['defaults'] with self.defaults
-                merged_defaults = {**self.defaults.model_dump(), **source['defaults']}
-                source['defaults'] = GRIPDefaults(**merged_defaults)
+                merged_defaults = {**self.defaults.model_dump(), **source["defaults"]}
+                source["defaults"] = GRIPDefaults(**merged_defaults)
 
         assert self.grip_server is not None, "GRIP Server is required"
 
@@ -130,7 +134,7 @@ class GRIPProject(ETLProject):
 def create_project(config: dict) -> GRIPProject:
     """Create sources from config."""
     assert config, "should load config"
-    assert 'sources' in config, "should have sources"
+    assert "sources" in config, "should have sources"
     project = GRIPProject(**config)
     # check that the project was created
     assert project, "should create project"
@@ -146,7 +150,8 @@ def grip_dag(project, scrape_bucket=False) -> list[DAG]:
 
 
 def grip_config():
-    _config = yaml.safe_load("""
+    _config = yaml.safe_load(
+        """
 id: grip
 
 loader:
@@ -188,5 +193,5 @@ grip_server:
     url: https://TODO
 
     """
-                             )
+    )
     return _config

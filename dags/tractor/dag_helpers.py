@@ -22,7 +22,9 @@ def list_files_recursive(directory) -> list[str]:
     file_paths = []
     for root, dirs, files in os.walk(directory):
         for file in files:
-            file_paths.append(str(os.path.join(root, file)).replace(directory + '/', '', 1))
+            file_paths.append(
+                str(os.path.join(root, file)).replace(directory + "/", "", 1)
+            )
     return file_paths
 
 
@@ -34,10 +36,12 @@ def on_failure_callback(context):
         context (dict): The context dictionary provided by Airflow.
     """
     cwd = os.getcwd()
-    state = context['ti'].state
-    log.warning(f"on_failure_callback:\nstate: {state}\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}")
+    state = context["ti"].state
+    log.warning(
+        f"on_failure_callback:\nstate: {state}\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}"
+    )
     # Clean up the temporary directory
-    shutil.rmtree(context['tmp_dir'])
+    shutil.rmtree(context["tmp_dir"])
     log.info(f"Removed {context['tmp_dir']}")
 
 
@@ -50,34 +54,36 @@ def on_success_callback(context):
     """
     try:
         cwd = os.getcwd()
-        log.info(f"on_success_callback\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}")
+        log.info(
+            f"on_success_callback\ncwd: {cwd}\ncontext: {context}\nti: {context['ti']}"
+        )
         log.info(f"outlets: {context['task'].outlets}")
 
         # Update the outlets with the manifest
-        _outlets = context['task'].outlets
+        _outlets = context["task"].outlets
         if not _outlets:
             log.info("on_success_callback no outlets")
             return
-        outlet = context['task'].outlets[0]
+        outlet = context["task"].outlets[0]
         outlet_extra = context["outlet_events"][outlet].extra
         if len(outlet_extra.keys()) == 0:
             log.info("on_success_callback outlet_events no extra")
             outlet_extra = outlet.extra
-        if 'manifest' in outlet_extra:
+        if "manifest" in outlet_extra:
             log.info("on_success_callback already has manifest")
             return
 
         # Upload the manifest for each connection and bucket
-        assert 'source' in outlet_extra
+        assert "source" in outlet_extra
         outlet_manifest = defaultdict(list)
         log.info(f"outlet_extra: {outlet_extra}")
-        source_dict = outlet_extra['source']
-        manifest_dict = outlet_extra.get('manifest', {})
-        bucket = source_dict['defaults']['bucket']
+        source_dict = outlet_extra["source"]
+        manifest_dict = outlet_extra.get("manifest", {})
+        bucket = source_dict["defaults"]["bucket"]
 
-        for output in outlet_extra['source']['outputs']:
+        for output in outlet_extra["source"]["outputs"]:
             log.info(f"output: {output}")
-            outlet_manifest[bucket].append(output['path'])
+            outlet_manifest[bucket].append(output["path"])
 
         hook = GCSHook()
         client = hook.get_conn()
@@ -91,16 +97,25 @@ def on_success_callback(context):
                 for file_name in manifest:
                     object_name = "TESTING/" + file_name
                     log.info(f"Uploading {file_name} to {bucket_name} {object_name}")
-                    hook.upload(bucket_name=bucket_name, object_name=object_name, filename=file_name)
+                    hook.upload(
+                        bucket_name=bucket_name,
+                        object_name=object_name,
+                        filename=file_name,
+                    )
                     log.info(f"Uploaded {file_name} to {bucket} {object_name}")
                     blob = bucket_obj.get_blob(blob_name=object_name)
-                    blobs.append(blob_to_dict(blob, extra={"bucket": bucket_name, "gcp_conn_id": hook.gcp_conn_id}))
+                    blobs.append(
+                        blob_to_dict(
+                            blob,
+                            extra={
+                                "bucket": bucket_name,
+                                "gcp_conn_id": hook.gcp_conn_id,
+                            },
+                        )
+                    )
 
         # Update the outlets with the manifest
-        extra = {
-            "manifest": blobs,
-            "source": source_dict
-        }
+        extra = {"manifest": blobs, "source": source_dict}
         context["outlet_events"][outlet].extra = extra
         log.info(f"Updated outlet {outlet} with extra: {extra}")
 
@@ -109,8 +124,8 @@ def on_success_callback(context):
         log.info(f"Removed {cwd}")
     except Exception as e:
         log.error(f"Error in on_success_callback: {e}")
-        context['ti'].xcom_push(key='error', value=str(e))
-        context['ti'].set_state(State.FAILED)
+        context["ti"].xcom_push(key="error", value=str(e))
+        context["ti"].set_state(State.FAILED)
 
 
 def blob_to_dict(blob, extra: dict = {}) -> dict:
@@ -131,7 +146,7 @@ def blob_to_dict(blob, extra: dict = {}) -> dict:
         "updated": blob.updated.isoformat(),
         "generation": blob.generation,
         "metageneration": blob.metageneration,
-        "etag": blob.etag
+        "etag": blob.etag,
     } | extra
 
 
@@ -145,8 +160,8 @@ def make_tmp_dir(dag_id: str) -> str:
     Returns:
         str: The path to the temporary directory.
     """
-    dag_id_parts = dag_id.split('-')
-    tmp_dir = '/tmp/' + '-'.join(dag_id_parts[:-1])
+    dag_id_parts = dag_id.split("-")
+    tmp_dir = "/tmp/" + "-".join(dag_id_parts[:-1])
     os.makedirs(tmp_dir, exist_ok=True)
     return tmp_dir
 
@@ -159,34 +174,38 @@ def pre_execute(context):
         context (dict): The context dictionary provided by Airflow.
     """
     log.info(context)
-    tmp_dir = make_tmp_dir(context['dag'].dag_id)
+    tmp_dir = make_tmp_dir(context["dag"].dag_id)
     os.chdir(tmp_dir)
-    context['tmp_dir'] = tmp_dir
+    context["tmp_dir"] = tmp_dir
     log.info(f"cd to {os.getcwd()}")
 
-    inlets = context['task'].inlets
+    inlets = context["task"].inlets
     if not inlets:
         log.info("pre_execute no inlets")
         return
 
     inlet = inlets[0]
-    inlet_extra = context['inlet_events'][inlet][-1].extra
+    inlet_extra = context["inlet_events"][inlet][-1].extra
     log.info(f"pre_execute inlets {inlet_extra}")
 
     # Download the manifest for each connection and bucket
     inlet_manifest = defaultdict(defaultdict)
-    for blob in inlet_extra['manifest']:
-        if blob['bucket'] not in inlet_manifest[blob['gcp_conn_id']]:
-            inlet_manifest[blob['gcp_conn_id']][blob['bucket']] = []
-        inlet_manifest[blob['gcp_conn_id']][blob['bucket']].append(blob)
+    for blob in inlet_extra["manifest"]:
+        if blob["bucket"] not in inlet_manifest[blob["gcp_conn_id"]]:
+            inlet_manifest[blob["gcp_conn_id"]][blob["bucket"]] = []
+        inlet_manifest[blob["gcp_conn_id"]][blob["bucket"]].append(blob)
 
     for gcp_conn_id in inlet_manifest:
         hook = GCSHook(gcp_conn_id=gcp_conn_id)
         for bucket in inlet_manifest[gcp_conn_id]:
             for blob in inlet_manifest[gcp_conn_id][bucket]:
-                file_name = os.path.join(tmp_dir, blob['name'])
+                file_name = os.path.join(tmp_dir, blob["name"])
                 # Ensure the directory for file_name exists
                 os.makedirs(os.path.dirname(file_name), exist_ok=True)
                 # Download the data
-                location = hook.download(bucket_name=bucket, object_name=blob['name'], filename=file_name)
-                log.info(f"Downloaded {blob['name']} to {file_name} at location {location}")
+                location = hook.download(
+                    bucket_name=bucket, object_name=blob["name"], filename=file_name
+                )
+                log.info(
+                    f"Downloaded {blob['name']} to {file_name} at location {location}"
+                )

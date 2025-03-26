@@ -14,5 +14,5 @@ def test_invalid_json_error():
     invalid_json_content = '{"key": "value"'
     with patch("builtins.open", mock_open(read_data=invalid_json_content)):
         with pytest.raises(json.JSONDecodeError):
-            with open('dags/tractor/etl_dsl/etl_dsl_schema.json', 'r') as json_file:
+            with open("dags/tractor/etl_dsl/etl_dsl_schema.json", "r") as json_file:
                 json.load(json_file)

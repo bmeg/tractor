@@ -1,6 +1,10 @@
 import pytest
 from airflow import DAG
-from tractor.etl_dsl.generators.fhir_aggregator import fhir_aggregator_config, create_project, fhir_aggregator_dag
+from tractor.etl_dsl.generators.fhir_aggregator import (
+    fhir_aggregator_config,
+    create_project,
+    fhir_aggregator_dag,
+)
 
 
 def test_fhir_aggregator_dag_creation():
@@ -21,7 +25,7 @@ def test_fhir_aggregator_dag_creation():
     for dag in dags:
         for task in dag.tasks:
             inlets.append([task.task_id, task.inlets])
-    print('inlets:')
+    print("inlets:")
     print(inlets)
 
     for dag in dags:
@@ -33,18 +37,20 @@ def test_fhir_aggregator_dag_creation():
             assert task.operator_class is not None
             assert task.inlets is not None
             assert task.outlets is not None
-            source_id = task.task_id.replace(config['id'] + "-", "").split("-")[0]
+            source_id = task.task_id.replace(config["id"] + "-", "").split("-")[0]
             if "transformer" in task.dag_id:
                 assert len(task.inlets) == 1
-                assert 'raw' in task.inlets[0].uri
+                assert "raw" in task.inlets[0].uri
                 assert source_id in task.inlets[0].uri
 
                 assert len(task.outlets) == 1
-                assert 'processed' in task.outlets[0].uri
+                assert "processed" in task.outlets[0].uri
                 assert source_id in task.outlets[0].uri
 
     dag_ids = [dag.dag_id for dag in dags]
-    expected_transformer_dag_ids = [f"{project.id}-{source.id}-transformer" for source in project.sources]
+    expected_transformer_dag_ids = [
+        f"{project.id}-{source.id}-transformer" for source in project.sources
+    ]
 
     assert set(expected_transformer_dag_ids).issubset(set(dag_ids))
 
@@ -71,4 +77,3 @@ def test_missing_required_fields():
     config = {"name": "test_project"}
     with pytest.raises(AssertionError):
         create_project(config)
-
