@@ -2,4 +2,5 @@
 pyyaml
 jsonschema
 apache-airflow
-apache-airflow-providers
+apache-airflow-providers-google
+airflow-providers-celery
