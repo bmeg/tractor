@@ -1,3 +1,4 @@
 # required for CI
 pyyaml
 jsonschema
+apache-airflow
