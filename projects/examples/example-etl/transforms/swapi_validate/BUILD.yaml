@@ -1,0 +1,21 @@
+
+
+name: swapi_validate
+
+steps:
+  - commandLine: ./validate_code.py
+    inputs:
+      - swapi_scrapper.planets
+      - swapi_scrapper.films
+      - swapi_scrapper.species
+      - swapi_scrapper.vehicles
+      - swapi_scrapper.starships
+      - swapi_fixer.people
+
+    outputs:
+      people: people.json
+      planets: planets.json
+      films: films.json
+      species: species.json
+      vehicles: vehicles.json
+      starships: starships.json

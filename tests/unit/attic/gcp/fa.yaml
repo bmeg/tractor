@@ -1,0 +1,20 @@
+id: fhir-aggregator
+
+load_commands:
+    - echo "load-all"
+
+defaults:
+    bucket: fhir-aggregator-public
+    bucket_prefix:
+    bucket_scheme: gs
+    operator_type: BashOperator
+    extract_commands:
+        - echo "extract"
+    transform_commands:
+        - "pwd;fa_submit prep {bucket_prefix}/META OUTPUT/R4/{bucket_prefix}/META --transformers part-of,vocabulary,validate --fhir-version R4"
+
+sources: []
+
+
+fhir_server:
+    url: https://TODO

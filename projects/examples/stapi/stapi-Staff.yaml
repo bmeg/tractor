@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Staff
+description: A Star Trek API DAG for Staff
+http_conn_id: stapi-http
+inputs:
+  Staff.json: /api/v2/rest/staff/search
+tags:
+- demo

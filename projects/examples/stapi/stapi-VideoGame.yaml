@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-VideoGame
+description: A Star Trek API DAG for VideoGame
+http_conn_id: stapi-http
+inputs:
+  VideoGame.json: /api/v1/rest/videoGame/search
+tags:
+- demo

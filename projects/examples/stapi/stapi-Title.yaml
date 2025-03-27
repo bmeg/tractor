@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Title
+description: A Star Trek API DAG for Title
+http_conn_id: stapi-http
+inputs:
+  Title.json: /api/v2/rest/title/search
+tags:
+- demo

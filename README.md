@@ -1,6 +1,7 @@
 # tractor
 Airflow based builds
 
+![image](docs/images/tractor.jpeg)
 
 ## setup
 
@@ -8,14 +9,22 @@ Airflow based builds
 
 * See [airflow configurations](README-config.md)
 
-## develop
-
-* [Best practices](README-writing-DAGs.md)
 
 ## run
 
-* [swapi_catalog](dags/README-swapi_catalog.md)
+* [fhir_aggregator](dags/README-create-fhir-aggregator.md)
+* [grip](dags/README-create-grip.md)
 
-## problems?
+## develop
 
-* [docker within docker](README-docker-within-docker.md)
+* [ETL DSL](dags/tractor/etl_dsl/README-etl-dsl.md)
+* [Best practices for DAG development](README-writing-DAGs.md)
+
+
+## test
+
+* [unit tests](tests/unit) - use `run ./run_tests.sh to execute the tests and generate the coverage badge.`
+
+
+
+![Coverage](docs/images/coverage.svg) 

@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Season
+description: A Star Trek API DAG for Season
+http_conn_id: stapi-http
+inputs:
+  Season.json: /api/v1/rest/season/search
+tags:
+- demo

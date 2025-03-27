@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Material
+description: A Star Trek API DAG for Material
+http_conn_id: stapi-http
+inputs:
+  Material.json: /api/v1/rest/material/search
+tags:
+- demo

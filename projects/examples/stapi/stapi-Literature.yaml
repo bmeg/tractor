@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Literature
+description: A Star Trek API DAG for Literature
+http_conn_id: stapi-http
+inputs:
+  Literature.json: /api/v1/rest/literature/search
+tags:
+- demo

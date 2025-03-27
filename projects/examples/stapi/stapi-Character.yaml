@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Character
+description: A Star Trek API DAG for Character
+http_conn_id: stapi-http
+inputs:
+  Character.json: /api/v1/rest/character/search
+tags:
+- demo

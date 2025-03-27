@@ -1,0 +1,8 @@
+aws_conn_id: stapi-aws
+dag_id: stapi-Weapon
+description: A Star Trek API DAG for Weapon
+http_conn_id: stapi-http
+inputs:
+  Weapon.json: /api/v2/rest/weapon/search
+tags:
+- demo
