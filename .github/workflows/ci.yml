@@ -19,6 +19,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel black mypy pytest pytest-cov pytest_httpx types-PyYAML types-requests
           pip install -r requirements-dev.txt
+          pip install -r requirements-ci.txt
 
       - name: Run Black
         run: black --check --verbose dags/tractor tests/ --exclude '.*attic.*'
