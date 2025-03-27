@@ -6,3 +6,4 @@ py-tes
 DeepDiff
 pytest-cov
 coverage-badge
+pyyaml
