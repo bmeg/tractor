@@ -1,12 +1,15 @@
 # Description: This file contains the Pydantic models for the ETL DSL schema.
 from __future__ import annotations
 
+import logging
 import pathlib
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import tes
 from pydantic import BaseModel, Field, RootModel, ConfigDict, model_validator, constr
+
+log = logging.getLogger(__name__)
 
 
 class EtlDslSchema(BaseModel):
@@ -31,6 +34,12 @@ class CommandDetailed(BaseModel):
     image: Optional[str] = Field(
         None, description="The image to be used for the command."
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def log_values(cls, data: Any) -> Any:
+        log.debug(f"log_values {cls} {data}")
+        return data
 
 
 # Define the class as a union of the two types, a string that will be expanded, or the details
@@ -149,6 +158,12 @@ class Task(BaseModel):
         description="Map of callbacks for task key=[pre_execute,on_failure, on_success] value=python.callable(context)",
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def log_values(cls, data: Any) -> Any:
+        log.debug(f"log_values {cls} {data}")
+        return data
+
     def to_tes(self) -> tes.Task:
         """Convert the Task model to a tes.Task object."""
         assert isinstance(
@@ -177,7 +192,7 @@ class Task(BaseModel):
             id=self.id,
             name=self.name,
             description=self.description,
-            executors=[tes.Executor(command=self.command.command, image=image)],
+            executors=[tes.Executor(command=self.command.command.split(), image=image)],
             inputs=inputs,
             outputs=outputs,
         )
@@ -232,8 +247,8 @@ class ETLProjectDefaults(BaseModel):
     """
 
     model_config = ConfigDict(use_enum_values=True)
-    bucket: str = Field(
-        ..., description="The name of the bucket where data will be stored."
+    bucket: Optional[str] = Field(
+        None, description="The name of the bucket where data will be stored."
     )
     bucket_prefix: Optional[str] = Field(
         None, description="A prefix to be used for all data stored in the bucket."
@@ -243,9 +258,9 @@ class ETLProjectDefaults(BaseModel):
         description="The scheme used for accessing the bucket (e.g., s3).",
     )
     operator_type: Optional[OperatorType] = Field(
-        OperatorType.BashOperator,
+        OperatorType.BashOperator.value,
         description="The default operator type to be used for executing commands.",
-    )
+    )  # type: ignore #  Incompatible types in assignment (expression has type "str", variable has type "OperatorType | None")
     callbacks: Optional[dict[str, str]] = Field(
         None,
         description="Map of callbacks for task key=[pre_execute,on_failure, on_success] value=python.callable(context)",
@@ -341,6 +356,8 @@ class ETLProject(BaseModel):
             if task is None:
                 return None
 
+            log.debug(f"ensure_task {task})")
+
             if isinstance(task.command, str):
                 task.command = CommandDetailed(
                     command=task.command,
@@ -402,3 +419,15 @@ class ETLProject(BaseModel):
             self.loader.outlets = self.loader.outlets or [
                 Dataset(uri=f"{self.id}-loaded")
             ]
+
+    @classmethod
+    def create_project(cls, config: dict) -> "ETLProject":
+        """Create sources from config."""
+        assert config, "should load config"
+        assert "sources" in config, "should have sources"
+        project = ETLProject(**config)
+        # check that the project was created
+        assert project, "should create project"
+        # and has at least one source
+        assert len(project.sources) > 0, "should have sources"
+        return project

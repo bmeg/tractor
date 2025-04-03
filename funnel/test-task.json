@@ -1,0 +1,12 @@
+{
+  "id": "ping-transformer",
+  "name": "ping-transformer",
+  "inputs": [],
+  "outputs": [],
+  "executors": [
+    {
+      "image": "ubuntu:latest",
+      "command": ["echo", "hello"]
+    }
+  ]
+}

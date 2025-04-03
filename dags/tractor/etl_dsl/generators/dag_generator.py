@@ -101,6 +101,8 @@ class AggregateLoadDagGenerator(BaseModel):
             start_date=datetime(2024, 2, 1),
             tags=tags,
             is_paused_upon_creation=True,
+            dag_display_name=task.name,
+            description=task.description,
         ) as dag:
             parms = {
                 "retries": 0,
@@ -144,6 +146,7 @@ class AggregateLoadDagGenerator(BaseModel):
                     task.callbacks.get("on_failure")
                 )
         operator: BaseOperator
+        log.debug(task.model_dump())
         if task.command.operator_type == "BashOperator":
             _operator_parms["cwd"] = make_tmp_dir(original_task_id)
             operator = BashOperator(
@@ -154,8 +157,14 @@ class AggregateLoadDagGenerator(BaseModel):
                 **_operator_parms,
                 python_callable=ensure_python_callable(task.command.command),
             )
-        else:
+        elif task.command.operator_type == "TESOperator":
             operator = TESOperator(**_operator_parms, tes_task=task.to_tes())
+        else:
+            msg = f"Unknown operator type: {task.command.operator_type}"
+            if msg not in LOGGED_ALREADY:
+                LOGGED_ALREADY.append(msg)
+                log.warning(msg)
+            raise ValueError(msg)
 
         return operator
 

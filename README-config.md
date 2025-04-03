@@ -1,5 +1,6 @@
 # airflow config
 
+A "How to" for configuring Airflow importing, exporting config variables.
 
 ## export
 ```bash
