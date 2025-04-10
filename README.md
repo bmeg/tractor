@@ -23,8 +23,12 @@ Airflow based builds
 
 ## test
 
-* [unit tests](tests/unit) - use `run ./run_tests.sh to execute the tests and generate the coverage badge.`
+* [unit tests](tests/unit) - use `./run_tests.sh` to execute the tests and generate the coverage badge.
 
 
+## examples
+* [create_tes_ping](dags/README-create-tes-ping.md)
+* [create_grip](dags/README-create-grip.md)
+* [create_fhir_aggregator](dags/README-create-fhir-aggregator.md)
 
 ![Coverage](docs/images/coverage.svg) 

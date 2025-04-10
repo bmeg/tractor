@@ -1,0 +1,27 @@
+id: test-tes
+defaults:
+  # TODO: add default bucket, coordinate with TES's bucket
+  bucket: foo
+sources:
+- id: ping
+  name: ping
+  extractor:
+      id: ping-extractor
+      name: ping-extractor
+      description: Get the service-info from the funnel service via BashOperator curl
+      command:
+        command: curl -s -X GET http://host.docker.internal:8000/service-info > ping/service-info.json
+        operator_type: TESOperator
+      outputs:
+      - ping/service-info.json
+
+  transformer:
+      id: ping-transformer
+      name: ping-transformer
+      description: Say hello world via TESOperator echo
+      command:
+        # TODO - add outputs
+        command: cat ping/service-info.json
+        operator_type: TESOperator
+      inputs:
+      - ping/service-info.json
