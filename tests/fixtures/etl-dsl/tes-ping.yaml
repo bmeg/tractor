@@ -10,7 +10,7 @@ sources:
       name: ping-extractor
       description: Get the service-info from the funnel service via BashOperator curl
       command:
-        command: curl -s -X GET curl http://host.docker.internal:8000/service-info > ping/service-info.json
+        command: curl -s -X GET http://host.docker.internal:8000/service-info > ping/service-info.json
         operator_type: TESOperator
       outputs:
       - ping/service-info.json
