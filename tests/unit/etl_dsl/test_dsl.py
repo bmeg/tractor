@@ -94,7 +94,8 @@ def test_load_minimal_etl_to_tes(minimal_etl_project):
     assert tes_task.id == our_task.id
     assert tes_task.name == our_task.name
     assert len(tes_task.executors) == 1
-    assert tes_task.executors[0].command == our_command.command.split()
+    import shlex
+    assert tes_task.executors[0].command == shlex.split(our_command.command)
 
     # TODO - make this more robust
     if our_command.image:
