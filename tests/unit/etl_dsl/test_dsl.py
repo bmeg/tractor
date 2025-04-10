@@ -173,8 +173,12 @@ def test_tes_ping(tes_ping_project):
     ping = etl_project.sources[0]
     extractor = ping.extractor
     assert len(extractor.outputs) == 1
-    assert extractor.outputs[0].url == "s3://foo/ping/service-info.json", extractor.outputs[0]
+    assert (
+        extractor.outputs[0].url == "s3://foo/ping/service-info.json"
+    ), extractor.outputs[0]
 
     transformer = ping.transformer
     assert len(transformer.inputs) == 1
-    assert transformer.inputs[0].url == "s3://foo/ping/service-info.json", transformer.inputs[0]
+    assert (
+        transformer.inputs[0].url == "s3://foo/ping/service-info.json"
+    ), transformer.inputs[0]
