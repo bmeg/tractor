@@ -32,4 +32,4 @@ funnel server run  -c config.yaml  --Logger.Level debug
 ![tes-connection.png](../docs/images/tes-connection.png)
 
 ## Airflow Usage 
-See [create_tes_ping.py](../dags/create_tes_ping.py)
+See [create_tes_ping](../dags/README-create-tes-ping.md)

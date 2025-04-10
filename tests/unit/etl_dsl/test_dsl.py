@@ -159,3 +159,21 @@ inlets:
     jsonschema.validate(instance=load_task, schema=schema)
     task = Task(**load_task)
     assert task
+
+
+def test_tes_ping(tes_ping_project):
+    """Test to load the TES ping project into the ETLProject Pydantic model."""
+    etl_project = ETLProject(**tes_ping_project)
+
+    etl_project.apply_defaults()  # expand defaults
+
+    pprint(etl_project)
+    assert len(etl_project.sources) == 1
+    ping = etl_project.sources[0]
+    extractor = ping.extractor
+    assert len(extractor.outputs) == 1
+    assert extractor.outputs[0].url == "s3://foo/ping/service-info.json", extractor.outputs[0]
+
+    transformer = ping.transformer
+    assert len(transformer.inputs) == 1
+    assert transformer.inputs[0].url == "s3://foo/ping/service-info.json", transformer.inputs[0]

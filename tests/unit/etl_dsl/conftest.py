@@ -26,3 +26,9 @@ def minimal_etl_project():
 def multi_source_etl_project():
     with open("tests/fixtures/etl-dsl/multi-source.yaml", "r") as file:
         return yaml.safe_load(file)
+
+
+@pytest.fixture
+def tes_ping_project():
+    with open("tests/fixtures/etl-dsl/tes-ping.yaml", "r") as file:
+        return yaml.safe_load(file)

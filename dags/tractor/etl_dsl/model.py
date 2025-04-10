@@ -254,9 +254,9 @@ class ETLProjectDefaults(BaseModel):
         None, description="A prefix to be used for all data stored in the bucket."
     )
     bucket_scheme: Optional[BucketScheme] = Field(
-        BucketScheme.s3,
+        BucketScheme.s3.value,
         description="The scheme used for accessing the bucket (e.g., s3).",
-    )
+    )  # type: ignore # Incompatible types in assignment (expression has type "str", variable has type "BucketScheme | None")
     operator_type: Optional[OperatorType] = Field(
         OperatorType.BashOperator.value,
         description="The default operator type to be used for executing commands.",
@@ -334,7 +334,10 @@ class ETLProject(BaseModel):
                     description=None,
                 )
                 if storage_object.url is None:
-                    storage_object.url = f"{defaults.bucket_scheme}://{defaults.bucket}/{defaults.bucket_prefix}/{storage_object.path}"
+                    bucket_prefix = ""
+                    if defaults.bucket_prefix:
+                        bucket_prefix = f"/{defaults.bucket_prefix}"
+                    storage_object.url = f"{defaults.bucket_scheme}://{defaults.bucket}{bucket_prefix}/{storage_object.path}"
                 # simple parsing
                 parsed = pathlib.Path(storage_object.path)
                 storage_object.type = "FILE"

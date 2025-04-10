@@ -44,8 +44,8 @@ class TESOperator(BaseOperator):
             step_error_message = f"Waiting on TES task to complete task_id: {task_id}"
             # TODO - how to configure wait?, should we have a sensor? ie have one airflow task to start tes.Task and another to wait "sense" for it to complete
             client.wait(task_id, timeout=0)  # wait for task to complete
-            step_error_message = f"Getting TES task view BASIC task_id: {task_id}"
-            task = client.get_task(task_id, view="BASIC")
+            step_error_message = f"Getting TES task view FULL task_id: {task_id}"
+            task = client.get_task(task_id, view="FULL")
             if task.state == "COMPLETE":
                 return task.outputs
             raise AirflowException(

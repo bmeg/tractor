@@ -14,6 +14,7 @@ create_tes_ping.py is a Python script designed to create Directed Acyclic Graphs
 ## Usage
 * Place the `tractor` directory in the root of your Airflow installation.
 * Place the `create_tes_ping.py` script in the root of `dags` directory of your Airflow installation. Run the script to generate the DAGs based on the specified templates and configurations.
+* Start the `TES` install and start server using the instructions in [README](../funnel/README.md)
 * Prompt airflow to refresh the DAGs by running:
 ```
 dc exec -it  airflow-worker airflow  dags reserialize -S /opt/airflow/dags/create_tes_ping.py

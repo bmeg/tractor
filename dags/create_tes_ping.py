@@ -20,6 +20,7 @@ id: test-tes
 defaults:
   # TODO: add default bucket, coordinate with TES's bucket
   bucket: foo
+  operator_type: TESOperator
 sources:
 - id: ping
   name: ping
@@ -27,18 +28,28 @@ sources:
       id: ping-extractor
       name: ping-extractor
       description: Get the service-info from the funnel service via BashOperator curl
-      command:
-        command: curl -s -X GET curl http://host.docker.internal:8000/service-info
-        operator_type: BashOperator
-    
+      command: echo "hello world" > /ping/hello.txt
+      outputs:
+        - /ping/hello.txt
+      # command:
+      #   command: curl -s -X GET curl http://host.docker.internal:8000/service-info > ping/service-info.json
+      #   operator_type: TESOperator
+      #   image: curlimages/curl
+      # outputs:
+      # - /ping/service-info.json
+
   transformer:
       id: ping-transformer
       name: ping-transformer
       description: Say hello world via TESOperator echo
-      command: 
-        # TODO - add outputs
-        command: echo hello
-        operator_type: TESOperator
+      command: cat /ping/hello.txt
+      inputs:
+        - /ping/hello.txt
+      # command:
+      #   command: cat ping/service-info.json
+      #   operator_type: TESOperator
+      # inputs:
+      # - /ping/service-info.json
 
     """
     )
