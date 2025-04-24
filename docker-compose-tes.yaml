@@ -1,0 +1,31 @@
+services:
+  funnel:
+    image: quay.io/ohsu-comp-bio/funnel:development
+    command: 
+      - server
+      - run
+      - --config
+      - /opt/funnel/config.yaml
+    depends_on:
+      - minio
+    ports:
+      - "8000:8000" # HTTP
+      - "9090:9090" # gRPC
+    volumes:
+      - ${FUNNEL_CONFIG:-/dev/null}:/opt/funnel/config.yaml
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # MinIO Console
+    environment:
+      MINIO_ROOT_USER: "minioadmin"
+      MINIO_ROOT_PASSWORD: "minioadmin"
+    volumes:
+      - ./minio-data:/data
+
+volumes:
+  minio-data:
+
